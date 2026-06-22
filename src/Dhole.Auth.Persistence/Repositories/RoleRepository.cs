@@ -18,7 +18,7 @@ public sealed class RoleRepository(ServiceDbContext dbContext)
 
         return dbContext
             .Roles.Include(x => x.Scopes)
-            .FirstOrDefaultAsync(x => x.Name == value, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Name == value && !x.IsDeleted, cancellationToken);
     }
 
     public Task<Role?> GetWithScopesAsync(
@@ -28,14 +28,14 @@ public sealed class RoleRepository(ServiceDbContext dbContext)
     {
         return dbContext
             .Roles.Include(x => x.Scopes)
-            .FirstOrDefaultAsync(x => x.Id == roleId, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == roleId && !x.IsDeleted, cancellationToken);
     }
 
     public Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         var value = name.Trim();
 
-        return dbContext.Roles.AnyAsync(x => x.Name == value, cancellationToken);
+        return dbContext.Roles.AnyAsync(x => x.Name == value && !x.IsDeleted, cancellationToken);
     }
 
     public async Task<PagedResult<RoleDto>> GetPagedAsync(
@@ -45,7 +45,7 @@ public sealed class RoleRepository(ServiceDbContext dbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var query = dbContext.Roles.AsNoTracking();
+        var query = dbContext.Roles.AsNoTracking().Where(x => !x.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -80,7 +80,7 @@ public sealed class RoleRepository(ServiceDbContext dbContext)
     {
         return await dbContext
             .Roles.AsNoTracking()
-            .Where(x => x.IsActive)
+            .Where(x => x.IsActive && !x.IsDeleted)
             .OrderBy(x => x.Name)
             .Select(x => new RoleSelectDto(x.Id, x.Name))
             .ToListAsync(cancellationToken);
@@ -93,8 +93,9 @@ public sealed class RoleRepository(ServiceDbContext dbContext)
     {
         return await (
             from roleScope in dbContext.RoleScopes.AsNoTracking()
+            join role in dbContext.Roles.AsNoTracking() on roleScope.RoleId equals role.Id
             join scope in dbContext.Scopes.AsNoTracking() on roleScope.ScopeId equals scope.Id
-            where roleScope.RoleId == roleId
+            where roleScope.RoleId == roleId && !role.IsDeleted
             orderby scope.Code
             select new RoleScopeDto(roleScope.RoleId, scope.Id, scope.Code, scope.Name)
         ).ToListAsync(cancellationToken);

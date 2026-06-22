@@ -19,21 +19,27 @@ public sealed class UserRepository(ServiceDbContext dbContext)
     {
         var value = userName.Trim();
 
-        return dbContext.Users.FirstOrDefaultAsync(x => x.UserName == value, cancellationToken);
+        return dbContext.Users.FirstOrDefaultAsync(
+            x => x.UserName == value && !x.IsDeleted,
+            cancellationToken
+        );
     }
 
     public Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         var value = email.Trim();
 
-        return dbContext.Users.FirstOrDefaultAsync(x => x.Email == value, cancellationToken);
+        return dbContext.Users.FirstOrDefaultAsync(
+            x => x.Email == value && !x.IsDeleted,
+            cancellationToken
+        );
     }
 
     public Task<User?> GetWithRolesAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return dbContext
             .Users.Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted, cancellationToken);
     }
 
     public Task<User?> GetWithScopesAsync(
@@ -43,7 +49,7 @@ public sealed class UserRepository(ServiceDbContext dbContext)
     {
         return dbContext
             .Users.Include(x => x.Scopes)
-            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted, cancellationToken);
     }
 
     public Task<User?> GetWithRolesAndScopesAsync(
@@ -54,7 +60,7 @@ public sealed class UserRepository(ServiceDbContext dbContext)
         return dbContext
             .Users.Include(x => x.Roles)
             .Include(x => x.Scopes)
-            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted, cancellationToken);
     }
 
     public Task<bool> ExistsByUserNameAsync(
@@ -64,7 +70,10 @@ public sealed class UserRepository(ServiceDbContext dbContext)
     {
         var value = userName.Trim();
 
-        return dbContext.Users.AnyAsync(x => x.UserName == value, cancellationToken);
+        return dbContext.Users.AnyAsync(
+            x => x.UserName == value && !x.IsDeleted,
+            cancellationToken
+        );
     }
 
     public Task<bool> ExistsByEmailAsync(
@@ -74,7 +83,7 @@ public sealed class UserRepository(ServiceDbContext dbContext)
     {
         var value = email.Trim();
 
-        return dbContext.Users.AnyAsync(x => x.Email == value, cancellationToken);
+        return dbContext.Users.AnyAsync(x => x.Email == value && !x.IsDeleted, cancellationToken);
     }
 
     public async Task<PagedResult<UserDto>> GetPagedAsync(
@@ -85,7 +94,7 @@ public sealed class UserRepository(ServiceDbContext dbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var query = dbContext.Users.AsNoTracking();
+        var query = dbContext.Users.AsNoTracking().Where(x => !x.IsDeleted);
 
         if (!string.IsNullOrWhiteSpace(search))
         {
@@ -136,8 +145,9 @@ public sealed class UserRepository(ServiceDbContext dbContext)
     {
         return await (
             from userRole in dbContext.UserRoles.AsNoTracking()
+            join user in dbContext.Users.AsNoTracking() on userRole.UserId equals user.Id
             join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
-            where userRole.UserId == userId
+            where userRole.UserId == userId && !user.IsDeleted && !role.IsDeleted
             orderby role.Name
             select new UserRoleDto(userRole.UserId, role.Id, role.Name)
         ).ToListAsync(cancellationToken);
@@ -150,8 +160,9 @@ public sealed class UserRepository(ServiceDbContext dbContext)
     {
         return await (
             from userScope in dbContext.UserScopes.AsNoTracking()
+            join user in dbContext.Users.AsNoTracking() on userScope.UserId equals user.Id
             join scope in dbContext.Scopes.AsNoTracking() on userScope.ScopeId equals scope.Id
-            where userScope.UserId == userId
+            where userScope.UserId == userId && !user.IsDeleted
             orderby scope.Code
             select new UserScopeDto(userScope.UserId, scope.Id, scope.Code, scope.Name)
         ).ToListAsync(cancellationToken);
@@ -162,33 +173,28 @@ public sealed class UserRepository(ServiceDbContext dbContext)
         CancellationToken cancellationToken = default
     )
     {
-        var roles = await (
-            from userRole in dbContext.UserRoles.AsNoTracking()
-            join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
-            where userRole.UserId == userId && role.IsActive && !role.IsDeleted
-            orderby role.Name
-            select new UserRoleDto(userRole.UserId, role.Id, role.Name)
-        ).ToListAsync(cancellationToken);
+        var roles = await GetUserRolesAsync(userId, cancellationToken);
 
-        var directScopes = await (
-            from userScope in dbContext.UserScopes.AsNoTracking()
-            join scope in dbContext.Scopes.AsNoTracking() on userScope.ScopeId equals scope.Id
-            where userScope.UserId == userId && scope.IsActive
-            orderby scope.Code
-            select new UserScopeDto(userScope.UserId, scope.Id, scope.Code, scope.Name)
-        ).ToListAsync(cancellationToken);
+        var directScopes = await GetUserScopesAsync(userId, cancellationToken);
 
         var roleScopes = await (
             from userRole in dbContext.UserRoles.AsNoTracking()
+            join user in dbContext.Users.AsNoTracking() on userRole.UserId equals user.Id
             join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
             join roleScope in dbContext.RoleScopes.AsNoTracking() on role.Id equals roleScope.RoleId
             join scope in dbContext.Scopes.AsNoTracking() on roleScope.ScopeId equals scope.Id
-            where userRole.UserId == userId && role.IsActive && !role.IsDeleted && scope.IsActive
+            where
+                userRole.UserId == userId
+                && !user.IsDeleted
+                && role.IsActive
+                && !role.IsDeleted
+                && scope.IsActive
             orderby scope.Code
             select new UserScopeDto(userId, scope.Id, scope.Code, scope.Name)
         ).ToListAsync(cancellationToken);
 
         var effectiveScopes = directScopes
+            .Where(x => roleScopes.All(y => y.ScopeId != x.ScopeId))
             .Concat(roleScopes)
             .GroupBy(x => x.ScopeId)
             .Select(x => x.First())
