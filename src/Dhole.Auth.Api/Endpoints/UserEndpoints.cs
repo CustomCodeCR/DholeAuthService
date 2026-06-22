@@ -2,6 +2,7 @@ using CustomCodeFramework.Api.Responses;
 using CustomCodeFramework.Core.Pagination;
 using CustomCodeFramework.Cqrs.Dispatching;
 using Dhole.Auth.Api.Authorization;
+using Dhole.Auth.Api.Extensions;
 using Dhole.Auth.Application.Users.AssignRolesToUser;
 using Dhole.Auth.Application.Users.AssignScopesToUser;
 using Dhole.Auth.Application.Users.ChangeUserPassword;
@@ -119,7 +120,7 @@ public static class UserEndpoints
                         request.DisplayName,
                         userType,
                         request.Password,
-                        null
+                        httpContext.GetCurrentUserId()
                     ),
                     cancellationToken
                 );
@@ -144,7 +145,7 @@ public static class UserEndpoints
                         request.UserName,
                         request.Email,
                         request.DisplayName,
-                        null
+                        httpContext.GetCurrentUserId()
                     ),
                     cancellationToken
                 );
@@ -164,7 +165,7 @@ public static class UserEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new ChangeUserPasswordCommand(userId, request.Password, null),
+                    new ChangeUserPasswordCommand(userId, request.Password, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -183,7 +184,7 @@ public static class UserEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new SetUserActiveCommand(userId, request.IsActive, null),
+                    new SetUserActiveCommand(userId, request.IsActive, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -202,7 +203,7 @@ public static class UserEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new SetUserLockedCommand(userId, request.IsLocked, request.Reason, null),
+                    new SetUserLockedCommand(userId, request.IsLocked, request.Reason, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -220,7 +221,7 @@ public static class UserEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new DeleteUserCommand(userId, null),
+                    new DeleteUserCommand(userId, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -239,7 +240,7 @@ public static class UserEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new AssignRolesToUserCommand(userId, request.RoleIds, null),
+                    new AssignRolesToUserCommand(userId, request.RoleIds, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -258,7 +259,7 @@ public static class UserEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new RevokeRolesFromUserCommand(userId, request.RoleIds, null),
+                    new RevokeRolesFromUserCommand(userId, request.RoleIds, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -277,7 +278,7 @@ public static class UserEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new AssignScopesToUserCommand(userId, request.ScopeIds, null),
+                    new AssignScopesToUserCommand(userId, request.ScopeIds, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -296,7 +297,7 @@ public static class UserEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new RevokeScopesFromUserCommand(userId, request.ScopeIds, null),
+                    new RevokeScopesFromUserCommand(userId, request.ScopeIds, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 

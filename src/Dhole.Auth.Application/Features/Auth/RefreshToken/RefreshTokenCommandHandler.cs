@@ -1,9 +1,11 @@
 using CustomCodeFramework.Core.Results;
 using CustomCodeFramework.Cqrs.Commands;
 using CustomCodeFramework.Persistence.Abstractions;
+using Dhole.Auth.Application.Abstractions.Auditing;
 using Dhole.Auth.Application.Abstractions.Authentication;
 using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Application.Abstractions.Repositories;
+using Dhole.Auth.Application.Auditing;
 using Dhole.Auth.Contracts.Authentication;
 using Dhole.Auth.Domain.Shared;
 
@@ -15,6 +17,7 @@ public sealed class RefreshTokenCommandHandler(
     IJwtTokenGenerator jwtTokenGenerator,
     IRefreshTokenGenerator refreshTokenGenerator,
     IEffectivePermissionService effectivePermissionService,
+    IAuthAuditService audit,
     IUnitOfWork unitOfWork
 ) : ICommandHandler<RefreshTokenCommand, Result<RefreshTokenResponse>>
 {
@@ -69,6 +72,7 @@ public sealed class RefreshTokenCommandHandler(
 
         var newRefreshToken = refreshTokenGenerator.Generate();
         var newRefreshTokenHash = refreshTokenGenerator.Hash(newRefreshToken);
+        var before = SessionAuditSnapshot.From(session);
 
         session.Refresh(
             newRefreshTokenHash,
@@ -76,6 +80,8 @@ public sealed class RefreshTokenCommandHandler(
             command.IpAddress,
             command.UserAgent
         );
+
+        var after = SessionAuditSnapshot.From(session);
 
         sessions.Update(session);
 
@@ -89,6 +95,36 @@ public sealed class RefreshTokenCommandHandler(
             permissions.EffectiveScopes.ToList(),
             user.TokenVersion,
             accessTokenExpiresAt
+        );
+
+        await audit.PublishAsync(
+            new AuthAuditEvent(
+                EventType: AuthAuditEventTypes.SessionRefreshed,
+                Action: AuthAuditActions.Refreshed,
+                EntityType: AuthAuditEntityTypes.Session,
+                EntityId: session.Id,
+                ActorUserId: user.Id,
+                ActorUserName: user.UserName,
+                Before: before,
+                After: after,
+                Payload: new
+                {
+                    sessionId = session.Id,
+                    userId = user.Id,
+                    userName = user.UserName,
+                    email = user.Email,
+                    accessTokenExpiresAt,
+                    refreshTokenExpiresAt,
+                },
+                Metadata: new
+                {
+                    operation = "refresh_token",
+                    oldRefreshTokenIncluded = false,
+                    newRefreshTokenIncluded = false,
+                    accessTokenIncluded = false,
+                }
+            ),
+            cancellationToken
         );
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

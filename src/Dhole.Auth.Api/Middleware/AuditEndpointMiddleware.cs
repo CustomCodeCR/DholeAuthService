@@ -92,8 +92,8 @@ public sealed class AuditEndpointMiddleware(
                 SourceService,
                 EntityType = ResolveEntityType(context),
                 EntityId = ResolveEntityId(context),
-                Action = "viewed",
-                EventType = "http.get",
+                Action = ResolveAction(context),
+                EventType = ResolveEventType(context),
                 UserId = auditContext?.UserId,
                 UserName = auditContext?.UserName,
                 IpAddress = auditContext?.IpAddress,
@@ -151,11 +151,6 @@ public sealed class AuditEndpointMiddleware(
             return false;
         }
 
-        if (!HttpMethods.IsGet(context.Request.Method))
-        {
-            return false;
-        }
-
         var path = context.Request.Path.Value ?? string.Empty;
 
         if (IgnoredPathPrefixes.Any(x => path.StartsWith(x, StringComparison.OrdinalIgnoreCase)))
@@ -163,7 +158,35 @@ public sealed class AuditEndpointMiddleware(
             return false;
         }
 
-        return true;
+        // La auditoría de negocio se genera en los command handlers.
+        // El middleware solo conserva eventos técnicos de seguridad/error.
+        var statusCode = context.Response.StatusCode;
+
+        return statusCode == StatusCodes.Status401Unauthorized
+            || statusCode == StatusCodes.Status403Forbidden
+            || statusCode >= StatusCodes.Status500InternalServerError;
+    }
+
+    private static string ResolveAction(HttpContext context)
+    {
+        return context.Response.StatusCode switch
+        {
+            StatusCodes.Status401Unauthorized => "unauthorized",
+            StatusCodes.Status403Forbidden => "forbidden",
+            >= StatusCodes.Status500InternalServerError => "http_error",
+            _ => "http_event",
+        };
+    }
+
+    private static string ResolveEventType(HttpContext context)
+    {
+        return context.Response.StatusCode switch
+        {
+            StatusCodes.Status401Unauthorized => "auth.access.unauthorized",
+            StatusCodes.Status403Forbidden => "auth.access.forbidden",
+            >= StatusCodes.Status500InternalServerError => "auth.http.error",
+            _ => "auth.http.event",
+        };
     }
 
     private static string? ResolveEntityType(HttpContext context)

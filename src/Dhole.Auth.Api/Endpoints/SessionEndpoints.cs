@@ -1,6 +1,7 @@
 using CustomCodeFramework.Core.Pagination;
 using CustomCodeFramework.Cqrs.Dispatching;
 using Dhole.Auth.Api.Authorization;
+using Dhole.Auth.Api.Extensions;
 using Dhole.Auth.Application.Feature.Sessions.GetActiveUserSessions;
 using Dhole.Auth.Application.Feature.Sessions.GetUserSessions;
 using Dhole.Auth.Application.Sessions.RevokeSession;
@@ -52,11 +53,12 @@ public static class SessionEndpoints
                 Guid sessionId,
                 RevokeSessionRequest request,
                 ICommandDispatcher dispatcher,
+                HttpContext httpContext,
                 CancellationToken cancellationToken
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new RevokeSessionCommand(sessionId, request.RevokedBy, request.Reason),
+                    new RevokeSessionCommand(sessionId, httpContext.GetCurrentUserId(), request.Reason),
                     cancellationToken
                 );
 
@@ -70,11 +72,12 @@ public static class SessionEndpoints
                 Guid userId,
                 RevokeSessionRequest request,
                 ICommandDispatcher dispatcher,
+                HttpContext httpContext,
                 CancellationToken cancellationToken
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new RevokeUserSessionsCommand(userId, request.RevokedBy, request.Reason),
+                    new RevokeUserSessionsCommand(userId, httpContext.GetCurrentUserId(), request.Reason),
                     cancellationToken
                 );
 
@@ -85,5 +88,5 @@ public static class SessionEndpoints
         return app;
     }
 
-    private sealed record RevokeSessionRequest(Guid? RevokedBy, string? Reason);
+    private sealed record RevokeSessionRequest(string? Reason);
 }

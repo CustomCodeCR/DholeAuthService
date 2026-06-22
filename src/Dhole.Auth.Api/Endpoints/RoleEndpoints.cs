@@ -2,6 +2,7 @@ using CustomCodeFramework.Api.Responses;
 using CustomCodeFramework.Core.Pagination;
 using CustomCodeFramework.Cqrs.Dispatching;
 using Dhole.Auth.Api.Authorization;
+using Dhole.Auth.Api.Extensions;
 using Dhole.Auth.Application.Roles.AssignScopesToRole;
 using Dhole.Auth.Application.Roles.CreateRole;
 using Dhole.Auth.Application.Roles.DeleteRole;
@@ -81,7 +82,7 @@ public static class RoleEndpoints
                         request.Name,
                         request.Description,
                         request.IsSystemRole,
-                        null
+                        httpContext.GetCurrentUserId()
                     ),
                     cancellationToken
                 );
@@ -101,7 +102,7 @@ public static class RoleEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new UpdateRoleCommand(roleId, request.Name, request.Description, null),
+                    new UpdateRoleCommand(roleId, request.Name, request.Description, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -120,7 +121,7 @@ public static class RoleEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new SetRoleActiveCommand(roleId, request.IsActive, null),
+                    new SetRoleActiveCommand(roleId, request.IsActive, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -138,7 +139,7 @@ public static class RoleEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new DeleteRoleCommand(roleId, null),
+                    new DeleteRoleCommand(roleId, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -157,7 +158,7 @@ public static class RoleEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new AssignScopesToRoleCommand(roleId, request.ScopeIds, null),
+                    new AssignScopesToRoleCommand(roleId, request.ScopeIds, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 
@@ -176,7 +177,7 @@ public static class RoleEndpoints
             ) =>
             {
                 var result = await dispatcher.DispatchAsync(
-                    new RevokeScopesFromRoleCommand(roleId, request.ScopeIds, null),
+                    new RevokeScopesFromRoleCommand(roleId, request.ScopeIds, httpContext.GetCurrentUserId()),
                     cancellationToken
                 );
 

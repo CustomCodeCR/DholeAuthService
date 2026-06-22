@@ -1,9 +1,11 @@
 using CustomCodeFramework.Core.Results;
 using CustomCodeFramework.Cqrs.Commands;
 using CustomCodeFramework.Persistence.Abstractions;
+using Dhole.Auth.Application.Abstractions.Auditing;
 using Dhole.Auth.Application.Abstractions.Authentication;
 using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Application.Abstractions.Repositories;
+using Dhole.Auth.Application.Auditing;
 using Dhole.Auth.Contracts.Authentication;
 using Dhole.Auth.Domain.Sessions.Entities;
 using Dhole.Auth.Domain.Shared;
@@ -17,6 +19,7 @@ public sealed class LoginCommandHandler(
     IRefreshTokenGenerator refreshTokenGenerator,
     IEffectivePermissionService effectivePermissionService,
     IPasswordHasher passwordHasher,
+    IAuthAuditService audit,
     IUnitOfWork unitOfWork
 ) : ICommandHandler<LoginCommand, Result<LoginResponse>>
 {
@@ -31,16 +34,43 @@ public sealed class LoginCommandHandler(
 
         if (user is null)
         {
+            await AuditLoginFailedAsync(
+                email,
+                null,
+                null,
+                "invalid_credentials",
+                "Auth.InvalidCredentials",
+                cancellationToken
+            );
+
             return Result.Failure<LoginResponse>(AuthErrors.InvalidCredentials);
         }
 
         if (!user.IsActive)
         {
+            await AuditLoginFailedAsync(
+                email,
+                user.Id,
+                user.UserName,
+                "user_inactive",
+                "Auth.UserInactive",
+                cancellationToken
+            );
+
             return Result.Failure<LoginResponse>(AuthErrors.UserInactive);
         }
 
         if (user.IsLocked)
         {
+            await AuditLoginFailedAsync(
+                email,
+                user.Id,
+                user.UserName,
+                "user_locked",
+                "Auth.UserLocked",
+                cancellationToken
+            );
+
             return Result.Failure<LoginResponse>(AuthErrors.UserLocked);
         }
 
@@ -48,6 +78,15 @@ public sealed class LoginCommandHandler(
 
         if (!isPasswordValid)
         {
+            await AuditLoginFailedAsync(
+                email,
+                user.Id,
+                user.UserName,
+                "invalid_credentials",
+                "Auth.InvalidCredentials",
+                cancellationToken
+            );
+
             return Result.Failure<LoginResponse>(AuthErrors.InvalidCredentials);
         }
 
@@ -81,6 +120,37 @@ public sealed class LoginCommandHandler(
             accessTokenExpiresAt
         );
 
+        await audit.PublishAsync(
+            new AuthAuditEvent(
+                EventType: AuthAuditEventTypes.LoginSucceeded,
+                Action: AuthAuditActions.LoginSucceeded,
+                EntityType: AuthAuditEntityTypes.Session,
+                EntityId: session.Id,
+                ActorUserId: user.Id,
+                ActorUserName: user.UserName,
+                After: SessionAuditSnapshot.From(session),
+                Payload: new
+                {
+                    sessionId = session.Id,
+                    userId = user.Id,
+                    userName = user.UserName,
+                    email = user.Email,
+                    userType = user.UserType.ToString(),
+                    roles = permissions.Roles.OrderBy(x => x).ToArray(),
+                    effectiveScopes = permissions.EffectiveScopes.OrderBy(x => x).ToArray(),
+                    accessTokenExpiresAt,
+                    refreshTokenExpiresAt,
+                },
+                Metadata: new
+                {
+                    operation = "login",
+                    refreshTokenIncluded = false,
+                    accessTokenIncluded = false,
+                }
+            ),
+            cancellationToken
+        );
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success(
@@ -92,5 +162,43 @@ public sealed class LoginCommandHandler(
                 refreshTokenExpiresAt
             )
         );
+    }
+
+    private async Task AuditLoginFailedAsync(
+        string email,
+        Guid? userId,
+        string? userName,
+        string reason,
+        string errorCode,
+        CancellationToken cancellationToken
+    )
+    {
+        await audit.PublishAsync(
+            new AuthAuditEvent(
+                EventType: AuthAuditEventTypes.LoginFailed,
+                Action: AuthAuditActions.LoginFailed,
+                EntityType: AuthAuditEntityTypes.Authentication,
+                EntityId: userId,
+                ActorUserId: userId,
+                ActorUserName: userName,
+                Payload: new
+                {
+                    email,
+                    userId,
+                    userName,
+                    reason,
+                    errorCode,
+                },
+                Metadata: new
+                {
+                    operation = "login",
+                    passwordIncluded = false,
+                },
+                ErrorMessage: errorCode
+            ),
+            cancellationToken
+        );
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
     }
 }
