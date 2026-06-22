@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Dhole.Auth.Api/Dhole.Auth.Api.csproj" />
+    <Project Path="src/Dhole.Auth.Application/Dhole.Auth.Application.csproj" />
+    <Project Path="src/Dhole.Auth.Contracts/Dhole.Auth.Contracts.csproj" />
+    <Project Path="src/Dhole.Auth.Domain/Dhole.Auth.Domain.csproj" />
+    <Project Path="src/Dhole.Auth.Infrastructure/Dhole.Auth.Infrastructure.csproj" />
+    <Project Path="src/Dhole.Auth.Persistence/Dhole.Auth.Persistence.csproj" />
+    <Project Path="src/Dhole.Auth.Workers/Dhole.Auth.Workers.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Dhole.Auth.IntegrationTests/Dhole.Auth.IntegrationTests.csproj" />
+    <Project Path="tests/Dhole.Auth.UnitTests/Dhole.Auth.UnitTests.csproj" />
+  </Folder>
+</Solution>
