@@ -2,8 +2,6 @@ using CustomCodeFramework.Core.Pagination;
 using CustomCodeFramework.Postgres.EntityFramework.Repositories;
 using Dhole.Auth.Application.Abstractions.Repositories;
 using Dhole.Auth.Contracts.Users;
-using Dhole.Auth.Domain.Roles.Entities;
-using Dhole.Auth.Domain.Scopes.Entities;
 using Dhole.Auth.Domain.Users.Entities;
 using Dhole.Auth.Persistence.DbContexts;
 using Microsoft.EntityFrameworkCore;
