@@ -250,6 +250,16 @@ public sealed class User : SoftDeletableAggregateRoot<Guid>
         AddDomainEvent(new UserUnblockedDomainEvent(Id, UserName, Email, updatedBy));
     }
 
+
+    public void RegisterSuccessfulLogin()
+    {
+        LastLoginAt = DateTime.UtcNow;
+        FailedLoginAttempts = 0;
+        LastFailedLoginAt = null;
+
+        MarkAsUpdated(DateTime.UtcNow, null);
+    }
+
     private void IncreaseTokenVersion()
     {
         TokenVersion++;

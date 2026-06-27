@@ -231,5 +231,12 @@ internal static class ScrapingScopes
                 "Activar o inactivar reglas de extracción",
                 "Permite activar o inactivar reglas de extracción de scraping."
             ),
+
+            // Web scraping
+            ScopeCatalog.Create(
+                "scraping.web-scraping.execute",
+                "Ejecutar scraping manual",
+                "Permite ejecutar scraping manual desde el API."
+            ),
         ];
 }

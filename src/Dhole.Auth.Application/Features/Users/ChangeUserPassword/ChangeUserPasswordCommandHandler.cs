@@ -4,6 +4,7 @@ using CustomCodeFramework.Persistence.Abstractions;
 using Dhole.Auth.Application.Abstractions.Auditing;
 using Dhole.Auth.Application.Abstractions.Authentication;
 using Dhole.Auth.Application.Abstractions.Repositories;
+using Dhole.Auth.Application.Users;
 using Dhole.Auth.Application.Auditing;
 using Dhole.Auth.Domain.Shared;
 
@@ -25,6 +26,10 @@ public sealed class ChangeUserPasswordCommandHandler(
 
         if (user is null)
             return Result.Failure(AuthErrors.UserNotFound);
+
+
+        if (ProtectedSeedUserGuard.IsProtected(user.Email))
+            return Result.Failure(AuthErrors.ProtectedSeedUser);
 
         var before = UserAuditSnapshot.From(user);
         var passwordHash = passwordHasher.Hash(command.Password);

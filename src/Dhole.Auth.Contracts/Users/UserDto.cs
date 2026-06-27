@@ -8,7 +8,9 @@ public sealed record UserDto(
     string Email,
     string DisplayName,
     UserType UserType,
+    string UserTypeName,
     bool IsActive,
     bool IsLocked,
-    DateTime? LastLoginAt
+    DateTime? LastLoginAt,
+    bool IsProtected
 );

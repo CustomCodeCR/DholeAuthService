@@ -148,4 +148,9 @@ public static class AuthErrors
         "Auth.CannotLockYourOwnUser",
         "No es posible bloquear el usuario actualmente autenticado."
     );
+
+    public static readonly Error ProtectedSeedUser = new(
+        "Auth.ProtectedSeedUser",
+        "El usuario semilla mlang@castrofallas.com no se puede modificar, eliminar, bloquear ni desactivar."
+    );
 }

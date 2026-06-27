@@ -95,6 +95,24 @@ public sealed class LoginCommandHandler(
         var accessTokenExpiresAt = DateTime.UtcNow.AddMinutes(30);
         var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
 
+        var singleActiveSessions = await sessions.GetActiveEntitiesByUserAsync(
+            user.Id,
+            cancellationToken
+        );
+
+        foreach (var activeSession in singleActiveSessions.OrderBy(x => x.LastUsedAt))
+        {
+            activeSession.Revoke(
+                revokedBy: user.Id,
+                reason: "Superseded by newer login"
+            );
+
+            sessions.Update(activeSession);
+        }
+
+        user.RegisterSuccessfulLogin();
+        users.Update(user);
+
         var refreshToken = refreshTokenGenerator.Generate();
         var refreshTokenHash = refreshTokenGenerator.Hash(refreshToken);
 

@@ -1,6 +1,7 @@
 using CustomCodeFramework.Core.Pagination;
 using CustomCodeFramework.Postgres.EntityFramework.Repositories;
 using Dhole.Auth.Application.Abstractions.Repositories;
+using Dhole.Auth.Application.Users;
 using Dhole.Auth.Contracts.Users;
 using Dhole.Auth.Domain.Users.Entities;
 using Dhole.Auth.Persistence.DbContexts;
@@ -119,11 +120,12 @@ public sealed class UserRepository(ServiceDbContext dbContext)
 
         var total = await query.CountAsync(cancellationToken);
 
-        var items = await query
+        var rows = await query
             .OrderBy(x => x.DisplayName)
             .Skip(page.Skip)
             .Take(page.PageSize)
-            .Select(x => new UserDto(
+            .Select(x => new
+            {
                 x.Id,
                 x.UserName,
                 x.Email,
@@ -131,9 +133,24 @@ public sealed class UserRepository(ServiceDbContext dbContext)
                 x.UserType,
                 x.IsActive,
                 x.IsLocked,
-                x.LastLoginAt
-            ))
+                x.LastLoginAt,
+            })
             .ToListAsync(cancellationToken);
+
+        var items = rows
+            .Select(x => new UserDto(
+                x.Id,
+                x.UserName,
+                x.Email,
+                x.DisplayName,
+                x.UserType,
+                x.UserType.ToString(),
+                x.IsActive,
+                x.IsLocked,
+                x.LastLoginAt,
+                ProtectedSeedUserGuard.IsProtected(x.Email)
+            ))
+            .ToList();
 
         return PagedResult<UserDto>.Create(items, page.PageNumber, page.PageSize, total);
     }
