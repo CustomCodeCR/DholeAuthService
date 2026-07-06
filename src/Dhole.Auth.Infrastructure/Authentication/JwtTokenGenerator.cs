@@ -11,6 +11,7 @@ internal sealed class JwtTokenGenerator(ITokenService tokenService) : IJwtTokenG
         string userType,
         string email,
         string userName,
+        string displayName,
         IReadOnlyCollection<string> roles,
         IReadOnlyCollection<string> scopes,
         int tokenVersion,
@@ -25,10 +26,26 @@ internal sealed class JwtTokenGenerator(ITokenService tokenService) : IJwtTokenG
                 UserType = userType,
                 Email = email,
                 UserName = userName,
+                ExtraClaims = BuildDisplayNameClaims(displayName),
                 Roles = roles,
                 Scopes = scopes,
                 TokenVersion = tokenVersion,
             }
         );
+    }
+
+    private static Dictionary<string, string> BuildDisplayNameClaims(string displayName)
+    {
+        var normalizedDisplayName = string.IsNullOrWhiteSpace(displayName)
+            ? string.Empty
+            : displayName.Trim();
+
+        return new Dictionary<string, string>
+        {
+            ["displayName"] = normalizedDisplayName,
+            ["display_name"] = normalizedDisplayName,
+            ["fullName"] = normalizedDisplayName,
+            ["full_name"] = normalizedDisplayName,
+        };
     }
 }

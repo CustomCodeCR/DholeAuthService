@@ -5,5 +5,8 @@ public sealed record RefreshTokenResponse(
     string RefreshToken,
     Guid SessionId,
     DateTime AccessTokenExpiresAt,
-    DateTime RefreshTokenExpiresAt
+    DateTime RefreshTokenExpiresAt,
+    string DisplayName,
+    string UserName,
+    string Email
 );

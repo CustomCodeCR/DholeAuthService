@@ -132,6 +132,7 @@ public sealed class LoginCommandHandler(
             user.UserType.ToString(),
             user.Email,
             user.UserName,
+            user.DisplayName,
             permissions.Roles.ToList(),
             permissions.EffectiveScopes.ToList(),
             user.TokenVersion,
@@ -177,7 +178,10 @@ public sealed class LoginCommandHandler(
                 refreshToken,
                 session.Id,
                 accessTokenExpiresAt,
-                refreshTokenExpiresAt
+                refreshTokenExpiresAt,
+                user.DisplayName,
+                user.UserName,
+                user.Email
             )
         );
     }

@@ -10,6 +10,7 @@ internal sealed class WorkerJwtTokenGenerator : IJwtTokenGenerator
         string userType,
         string email,
         string userName,
+        string displayName,
         IReadOnlyCollection<string> roles,
         IReadOnlyCollection<string> scopes,
         int tokenVersion,

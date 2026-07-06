@@ -91,6 +91,7 @@ public sealed class RefreshTokenCommandHandler(
             user.UserType.ToString(),
             user.Email,
             user.UserName,
+            user.DisplayName,
             permissions.Roles.ToList(),
             permissions.EffectiveScopes.ToList(),
             user.TokenVersion,
@@ -135,7 +136,10 @@ public sealed class RefreshTokenCommandHandler(
                 newRefreshToken,
                 session.Id,
                 accessTokenExpiresAt,
-                refreshTokenExpiresAt
+                refreshTokenExpiresAt,
+                user.DisplayName,
+                user.UserName,
+                user.Email
             )
         );
     }
