@@ -4,61 +4,137 @@ internal static class PricingScopes
 {
     public static IReadOnlyCollection<ScopeSeedDefinition> All =>
         [
+            // Costs
             ScopeCatalog.Create(
-                "pricing.fcl-rates.create",
-                "Crear tarifas FCL",
-                "Permite crear tarifas FCL manualmente."
+                "pricing.cost.create",
+                "Crear costos",
+                "Permite crear costos base de Pricing."
             ),
             ScopeCatalog.Create(
-                "pricing.fcl-rates.view",
-                "Ver tarifas FCL",
-                "Permite consultar tarifas FCL."
+                "pricing.cost.view",
+                "Ver costos",
+                "Permite consultar costos base de Pricing."
             ),
             ScopeCatalog.Create(
-                "pricing.fcl-rates.update",
-                "Actualizar tarifas FCL",
-                "Permite actualizar montos y condiciones de tarifas FCL."
+                "pricing.cost.update",
+                "Actualizar costos",
+                "Permite modificar costos base de Pricing."
             ),
             ScopeCatalog.Create(
-                "pricing.fcl-rates.delete",
-                "Eliminar tarifas FCL",
-                "Permite eliminar tarifas FCL."
+                "pricing.cost.delete",
+                "Eliminar costos",
+                "Permite eliminar costos base de Pricing."
             ),
             ScopeCatalog.Create(
-                "pricing.fcl-rates.set-active",
-                "Activar/Inactivar tarifas FCL",
-                "Permite activar o inactivar tarifas FCL."
+                "pricing.cost.set-active",
+                "Activar/Inactivar costos",
+                "Permite activar o inactivar costos base de Pricing."
             ),
             ScopeCatalog.Create(
-                "pricing.fcl-rates.expire",
-                "Vencer tarifas FCL",
-                "Permite marcar tarifas FCL como vencidas."
+                "pricing.cost.select",
+                "Seleccionar costos",
+                "Permite consultar costos para listas de selección."
             ),
+            // Imported FCL rates
             ScopeCatalog.Create(
-                "pricing.fcl-rate-imports.create",
+                "pricing.import-fcl-rate.create",
                 "Importar tarifas FCL",
-                "Permite subir PDF, Excel o CSV y enviarlo a extracción de datos."
+                "Permite subir archivos PDF, Excel o CSV para extraer tarifas FCL."
             ),
             ScopeCatalog.Create(
-                "pricing.fcl-rate-imports.view",
-                "Ver importaciones FCL",
-                "Permite consultar importaciones, filas extraídas e incidencias."
+                "pricing.import-fcl-rate.view",
+                "Ver tarifas FCL importadas",
+                "Permite consultar tarifas FCL importadas y su estado."
             ),
             ScopeCatalog.Create(
-                "pricing.fcl-rate-imports.approve",
-                "Aprobar importaciones FCL",
-                "Permite aprobar una importación y convertir filas válidas en tarifas FCL."
+                "pricing.import-fcl-rate.delete",
+                "Eliminar tarifas FCL importadas",
+                "Permite eliminar tarifas FCL importadas."
             ),
             ScopeCatalog.Create(
-                "pricing.fcl-rate-imports.reject",
-                "Rechazar importaciones FCL",
-                "Permite rechazar importaciones de tarifas FCL."
+                "pricing.import-fcl-rate.approve",
+                "Aprobar tarifas FCL importadas",
+                "Permite aprobar tarifas FCL importadas."
             ),
             ScopeCatalog.Create(
-                "pricing.fcl-rate-imports.delete",
-                "Eliminar importaciones FCL",
-                "Permite eliminar importaciones de tarifas FCL."
+                "pricing.import-fcl-rate.reject",
+                "Rechazar tarifas FCL importadas",
+                "Permite rechazar tarifas FCL importadas."
             ),
+            ScopeCatalog.Create(
+                "pricing.import-fcl-rate.create-as-rate",
+                "Crear tarifa desde importación FCL",
+                "Permite convertir una tarifa FCL importada en una tarifa oficial."
+            ),
+            // Rates
+            ScopeCatalog.Create(
+                "pricing.rate.create",
+                "Crear tarifas",
+                "Permite crear tarifas oficiales de Pricing."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate.view",
+                "Ver tarifas",
+                "Permite consultar tarifas oficiales de Pricing."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate.update",
+                "Actualizar tarifas",
+                "Permite modificar tarifas oficiales de Pricing."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate.delete",
+                "Eliminar tarifas",
+                "Permite eliminar tarifas oficiales de Pricing."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate.set-active",
+                "Activar/Inactivar tarifas",
+                "Permite activar o inactivar tarifas oficiales de Pricing."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate.select",
+                "Seleccionar tarifas",
+                "Permite consultar tarifas para listas de selección."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate.approve-low-margin",
+                "Aprobar margen bajo",
+                "Permite aprobar tarifas con margen menor al mínimo permitido."
+            ),
+            // FCL rate details
+            ScopeCatalog.Create(
+                "pricing.fcl-rate-detail.create",
+                "Agregar detalle FCL",
+                "Permite agregar detalles FCL a una tarifa oficial."
+            ),
+            ScopeCatalog.Create(
+                "pricing.fcl-rate-detail.update",
+                "Actualizar detalle FCL",
+                "Permite modificar detalles FCL de una tarifa oficial."
+            ),
+            ScopeCatalog.Create(
+                "pricing.fcl-rate-detail.delete",
+                "Eliminar detalle FCL",
+                "Permite eliminar detalles FCL de una tarifa oficial."
+            ),
+            // Rate cost details
+            ScopeCatalog.Create(
+                "pricing.rate-cost-detail.create",
+                "Agregar costo a tarifa",
+                "Permite agregar costos aplicados a una tarifa oficial."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate-cost-detail.update",
+                "Actualizar costo de tarifa",
+                "Permite modificar costos aplicados a una tarifa oficial."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate-cost-detail.delete",
+                "Eliminar costo de tarifa",
+                "Permite eliminar costos aplicados a una tarifa oficial."
+            ),
+            // FCL decisions
             ScopeCatalog.Create(
                 "pricing.fcl-decisions.create",
                 "Crear decisión FCL",
@@ -70,14 +146,9 @@ internal static class PricingScopes
                 "Permite consultar decisiones tarifarias FCL."
             ),
             ScopeCatalog.Create(
-                "pricing.dashboard.view",
-                "Ver dashboard de Pricing",
-                "Permite ver indicadores del módulo de Pricing."
-            ),
-            ScopeCatalog.Create(
-                "pricing.selects.view",
-                "Ver selects de Pricing",
-                "Permite consultar opciones de selección del módulo de Pricing."
+                "pricing.fcl-decisions.delete",
+                "Eliminar decisión FCL",
+                "Permite eliminar decisiones tarifarias FCL."
             ),
         ];
 }
