@@ -102,6 +102,11 @@ internal static class PricingScopes
                 "Aprobar margen bajo",
                 "Permite aprobar tarifas con margen menor al mínimo permitido."
             ),
+            ScopeCatalog.Create(
+                "pricing.rate.approve-freight",
+                "Aprobar flete",
+                "Permite aprobar o modificar manualmente la venta del flete internacional."
+            ),
             // FCL rate details
             ScopeCatalog.Create(
                 "pricing.fcl-rate-detail.create",
