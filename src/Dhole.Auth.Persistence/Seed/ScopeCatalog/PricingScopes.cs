@@ -107,6 +107,11 @@ internal static class PricingScopes
                 "Aprobar flete",
                 "Permite aprobar o modificar manualmente la venta del flete internacional."
             ),
+            ScopeCatalog.Create(
+                "pricing.rate.report.generate",
+                "Generar documento de tarifa",
+                "Permite generar y descargar documentos comerciales de tarifas mediante las plantillas de Reports."
+            ),
             // FCL rate details
             ScopeCatalog.Create(
                 "pricing.fcl-rate-detail.create",
