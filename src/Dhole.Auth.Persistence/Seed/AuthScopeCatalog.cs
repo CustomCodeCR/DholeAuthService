@@ -13,5 +13,6 @@ internal static class AuthScopeCatalog
             .. StorageScopes.All,
             .. MonitoringScopes.All,
             .. ReportsScopes.All,
+            .. NotificationsScopes.All,
         ];
 }
