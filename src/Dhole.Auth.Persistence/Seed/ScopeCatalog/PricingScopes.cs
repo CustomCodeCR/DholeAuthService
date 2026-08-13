@@ -35,6 +35,37 @@ internal static class PricingScopes
                 "Seleccionar costos",
                 "Permite consultar costos para listas de selección."
             ),
+            // Rate term catalog
+            ScopeCatalog.Create(
+                "pricing.rate-term.create",
+                "Crear condiciones de tarifa",
+                "Permite crear ítems reutilizables de Incluye, Sujeto a y No incluye."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate-term.view",
+                "Ver condiciones de tarifa",
+                "Permite consultar el catálogo de condiciones comerciales."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate-term.update",
+                "Actualizar condiciones de tarifa",
+                "Permite modificar categoría, texto y orden de las condiciones comerciales."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate-term.delete",
+                "Eliminar condiciones de tarifa",
+                "Permite eliminar condiciones comerciales del catálogo."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate-term.set-active",
+                "Activar/Inactivar condiciones de tarifa",
+                "Permite activar o inactivar condiciones comerciales."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate-term.select",
+                "Seleccionar condiciones de tarifa",
+                "Permite consultar condiciones activas para crear una tarifa."
+            ),
             // Imported FCL rates
             ScopeCatalog.Create(
                 "pricing.import-fcl-rate.create",

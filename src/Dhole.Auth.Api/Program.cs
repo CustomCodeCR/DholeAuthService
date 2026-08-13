@@ -78,6 +78,7 @@ app.MapUserEndpoints();
 app.MapRoleEndpoints();
 app.MapScopeEndpoints();
 app.MapSessionEndpoints();
+app.MapInternalPricingRecipientEndpoints();
 
 using (var scope = app.Services.CreateScope())
 {
