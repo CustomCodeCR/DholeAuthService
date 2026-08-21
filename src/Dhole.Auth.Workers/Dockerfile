@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 # Base image
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS base
 RUN apt-get update && \
@@ -11,8 +13,10 @@ ENV TZ=America/Costa_Rica
 # Build image
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
+ARG GITHUB_ACTOR=github-actions
 WORKDIR /src
 
+COPY ["NuGet.Config", "./NuGet.Config"]
 COPY ["src/Dhole.Auth.Workers/Dhole.Auth.Workers.csproj", "src/Dhole.Auth.Workers/"]
 COPY ["src/Dhole.Auth.Api/Dhole.Auth.Api.csproj", "src/Dhole.Auth.Api/"]
 COPY ["src/Dhole.Auth.Application/Dhole.Auth.Application.csproj", "src/Dhole.Auth.Application/"]
@@ -21,7 +25,9 @@ COPY ["src/Dhole.Auth.Persistence/Dhole.Auth.Persistence.csproj", "src/Dhole.Aut
 COPY ["src/Dhole.Auth.Infrastructure/Dhole.Auth.Infrastructure.csproj", "src/Dhole.Auth.Infrastructure/"]
 COPY ["src/Dhole.Auth.Contracts/Dhole.Auth.Contracts.csproj", "src/Dhole.Auth.Contracts/"]
 
-RUN dotnet restore "src/Dhole.Auth.Workers/Dhole.Auth.Workers.csproj"
+RUN --mount=type=secret,id=github_token,required=true \
+  export NuGetPackageSourceCredentials_github="Username=${GITHUB_ACTOR};Password=$(cat /run/secrets/github_token);ValidAuthenticationTypes=Basic" && \
+  dotnet restore "src/Dhole.Auth.Workers/Dhole.Auth.Workers.csproj" --configfile /src/NuGet.Config
 
 COPY . .
 
@@ -36,6 +42,7 @@ WORKDIR /src/src/Dhole.Auth.Workers
 RUN dotnet publish "Dhole.Auth.Workers.csproj" \
   -c $BUILD_CONFIGURATION \
   -o /app/publish \
+  --no-restore \
   /p:UseAppHost=false
 
 # Final image
