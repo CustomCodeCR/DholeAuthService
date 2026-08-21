@@ -28,10 +28,25 @@ internal sealed class JwtTokenGenerator(ITokenService tokenService) : IJwtTokenG
                 UserName = userName,
                 ExtraClaims = BuildDisplayNameClaims(displayName),
                 Roles = roles,
-                Scopes = scopes,
+                Scopes = ExpandCompatibleScopes(scopes),
                 TokenVersion = tokenVersion,
             }
         );
+    }
+
+    private static IReadOnlyCollection<string> ExpandCompatibleScopes(IReadOnlyCollection<string> scopes)
+    {
+        var expanded = new HashSet<string>(scopes, StringComparer.OrdinalIgnoreCase);
+
+        // Config historically exposed config.catalog-selects.view while some clients/roles
+        // use the shorter config.select. Emit both so old and new services authorize the
+        // same permission without forcing users to log in with two separate scopes.
+        if (expanded.Contains("config.select"))
+            expanded.Add("config.catalog-selects.view");
+        if (expanded.Contains("config.catalog-selects.view"))
+            expanded.Add("config.select");
+
+        return expanded.ToArray();
     }
 
     private static Dictionary<string, string> BuildDisplayNameClaims(string displayName)

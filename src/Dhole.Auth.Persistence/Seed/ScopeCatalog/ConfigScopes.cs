@@ -68,6 +68,11 @@ internal static class ConfigScopes
                 "Permite consultar catálogos en formato de selección."
             ),
             ScopeCatalog.Create(
+                "config.select",
+                "Seleccionar configuración",
+                "Alias compatible para consultar catálogos en formato de selección desde clientes de Pricing y Web."
+            ),
+            ScopeCatalog.Create(
                 "config.catalog-items.validate",
                 "Validar items de catálogo",
                 "Permite validar si un item existe y está activo dentro de un catálogo."
