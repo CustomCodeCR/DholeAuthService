@@ -1,6 +1,5 @@
 using System.Security.Cryptography;
 using System.Text;
-using Dhole.Auth.Domain.Shared;
 using Dhole.Auth.Persistence.DbContexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +7,10 @@ namespace Dhole.Auth.Api.Endpoints;
 
 public static class InternalPricingRecipientEndpoints
 {
-    private static readonly string[] PricingRoleNames = [
-        "Pricing",
-        AuthConstants.SystemRoles.SuperUser,
-        AuthConstants.SystemRoles.Administrator,
+    private static readonly string[] PricingReviewScopeCodes =
+    [
+        "pricing.import-fcl-rate.review",
+        "pricing.import-fcl-rate.approve",
     ];
 
     public static IEndpointRouteBuilder MapInternalPricingRecipientEndpoints(this IEndpointRouteBuilder app)
@@ -31,25 +30,39 @@ public static class InternalPricingRecipientEndpoints
         if (!HasValidServiceKey(request, configuration))
             return Results.Unauthorized();
 
-        var normalizedRoleNames = PricingRoleNames.Select(x => x.ToLower()).ToArray();
-        var roleIds = await db.Roles
+        var scopeIds = await db.Scopes
             .AsNoTracking()
-            .Where(x => !x.IsDeleted && x.IsActive && normalizedRoleNames.Contains(x.Name.ToLower()))
+            .Where(x => x.IsActive && PricingReviewScopeCodes.Contains(x.Code))
             .Select(x => x.Id)
             .ToArrayAsync(cancellationToken);
 
-        if (roleIds.Length == 0)
+        if (scopeIds.Length == 0)
             return Results.Ok(Array.Empty<object>());
 
-        var userIds = db.UserRoles
+        var directUserIds = db.UserScopes
+            .AsNoTracking()
+            .Where(x => scopeIds.Contains(x.ScopeId))
+            .Select(x => x.UserId);
+
+        var roleIds = db.RoleScopes
+            .AsNoTracking()
+            .Where(x => scopeIds.Contains(x.ScopeId))
+            .Select(x => x.RoleId);
+
+        var roleUserIds = db.UserRoles
             .AsNoTracking()
             .Where(x => roleIds.Contains(x.RoleId))
-            .Select(x => x.UserId)
-            .Distinct();
+            .Select(x => x.UserId);
+
+        var recipientUserIds = directUserIds.Union(roleUserIds);
 
         var recipients = await db.Users
             .AsNoTracking()
-            .Where(x => !x.IsDeleted && x.IsActive && !x.IsLocked && userIds.Contains(x.Id))
+            .Where(x =>
+                !x.IsDeleted
+                && x.IsActive
+                && !x.IsLocked
+                && recipientUserIds.Contains(x.Id))
             .OrderBy(x => x.DisplayName)
             .Select(x => new
             {
