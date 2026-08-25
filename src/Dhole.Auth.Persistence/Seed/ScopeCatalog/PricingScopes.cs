@@ -4,6 +4,17 @@ internal static class PricingScopes
 {
     public static IReadOnlyCollection<ScopeSeedDefinition> All =>
         [
+            // Workspace / imported-rate review
+            ScopeCatalog.Create(
+                "pricing.workspace.access",
+                "Acceder a Pricing",
+                "Permite trabajar únicamente dentro del módulo de Pricing."
+            ),
+            ScopeCatalog.Create(
+                "pricing.import-fcl-rate.review",
+                "Revisar y aprobar tarifas recibidas",
+                "Permite ver, revisar, comentar, aprobar y rechazar tarifas recibidas por correo o extracción."
+            ),
             // Costs
             ScopeCatalog.Create(
                 "pricing.cost.create",
