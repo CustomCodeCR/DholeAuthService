@@ -7,11 +7,7 @@ namespace Dhole.Auth.Api.Endpoints;
 
 public static class InternalPricingRecipientEndpoints
 {
-    private static readonly string[] PricingReviewScopeCodes =
-    [
-        "pricing.import-fcl-rate.review",
-        "pricing.import-fcl-rate.approve",
-    ];
+    private const string PricingReviewScopeCode = "pricing.import-fcl-rate.review";
 
     public static IEndpointRouteBuilder MapInternalPricingRecipientEndpoints(this IEndpointRouteBuilder app)
     {
@@ -30,29 +26,29 @@ public static class InternalPricingRecipientEndpoints
         if (!HasValidServiceKey(request, configuration))
             return Results.Unauthorized();
 
-        var scopeIds = await db.Scopes
+        var reviewScopeId = await db.Scopes
             .AsNoTracking()
-            .Where(x => x.IsActive && PricingReviewScopeCodes.Contains(x.Code))
-            .Select(x => x.Id)
-            .ToArrayAsync(cancellationToken);
+            .Where(x => x.IsActive && x.Code == PricingReviewScopeCode)
+            .Select(x => (Guid?)x.Id)
+            .SingleOrDefaultAsync(cancellationToken);
 
-        if (scopeIds.Length == 0)
+        if (!reviewScopeId.HasValue)
             return Results.Ok(Array.Empty<object>());
 
         var directUserIds = db.UserScopes
             .AsNoTracking()
-            .Where(x => scopeIds.Contains(x.ScopeId))
+            .Where(x => x.ScopeId == reviewScopeId.Value)
             .Select(x => x.UserId);
 
-        var roleIds = db.RoleScopes
-            .AsNoTracking()
-            .Where(x => scopeIds.Contains(x.ScopeId))
-            .Select(x => x.RoleId);
-
-        var roleUserIds = db.UserRoles
-            .AsNoTracking()
-            .Where(x => roleIds.Contains(x.RoleId))
-            .Select(x => x.UserId);
+        var roleUserIds =
+            from userRole in db.UserRoles.AsNoTracking()
+            join role in db.Roles.AsNoTracking() on userRole.RoleId equals role.Id
+            join roleScope in db.RoleScopes.AsNoTracking() on role.Id equals roleScope.RoleId
+            where
+                !role.IsDeleted
+                && role.IsActive
+                && roleScope.ScopeId == reviewScopeId.Value
+            select userRole.UserId;
 
         var recipientUserIds = directUserIds.Union(roleUserIds);
 
