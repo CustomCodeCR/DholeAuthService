@@ -1,4 +1,5 @@
 using Dhole.Auth.Application.Abstractions.Authentication;
+using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Domain.Roles.Entities;
 using Dhole.Auth.Domain.Scopes.Entities;
 using Dhole.Auth.Domain.Shared;
@@ -13,6 +14,7 @@ namespace Dhole.Auth.Persistence.Seed;
 public sealed class DatabaseSeeder(
     ServiceDbContext dbContext,
     IPasswordHasher passwordHasher,
+    IEffectivePermissionCache permissionCache,
     IOptions<SuperAdminSeedOptions> superAdminOptions
 )
 {
@@ -23,6 +25,7 @@ public sealed class DatabaseSeeder(
         await SeedRolesAsync(cancellationToken);
         await SeedScopesAsync(cancellationToken);
         await AssignAllScopesToSuperUserAsync(cancellationToken);
+        await AssignPricingScopesToPricingRoleAsync(cancellationToken);
         await SeedSuperAdminAsync(cancellationToken);
     }
 
@@ -60,6 +63,23 @@ public sealed class DatabaseSeeder(
             );
 
             await dbContext.Roles.AddAsync(superUser, cancellationToken);
+        }
+
+        if (
+            !await dbContext.Roles.AnyAsync(
+                x => x.Name == AuthConstants.SystemRoles.Pricing,
+                cancellationToken
+            )
+        )
+        {
+            var pricing = Role.Create(
+                AuthConstants.SystemRoles.Pricing,
+                "Rol operativo con acceso completo al módulo de Pricing.",
+                isSystemRole: true,
+                createdBy: null
+            );
+
+            await dbContext.Roles.AddAsync(pricing, cancellationToken);
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -115,6 +135,44 @@ public sealed class DatabaseSeeder(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task AssignPricingScopesToPricingRoleAsync(CancellationToken cancellationToken)
+    {
+        var pricingRole = await dbContext
+            .Roles.Include(x => x.Scopes)
+            .FirstOrDefaultAsync(
+                x => x.Name == AuthConstants.SystemRoles.Pricing,
+                cancellationToken
+            );
+
+        if (pricingRole is null)
+        {
+            return;
+        }
+
+        var pricingScopeIds = await dbContext
+            .Scopes.Where(x => x.IsActive && x.Code.StartsWith("pricing."))
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        foreach (var scopeId in pricingScopeIds)
+        {
+            pricingRole.AssignScope(scopeId, assignedBy: null);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var pricingUserIds = await dbContext
+            .UserRoles.Where(x => x.RoleId == pricingRole.Id)
+            .Select(x => x.UserId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        foreach (var userId in pricingUserIds)
+        {
+            await permissionCache.RemoveAsync(userId, cancellationToken);
+        }
     }
 
     private async Task SeedSuperAdminAsync(CancellationToken cancellationToken)
