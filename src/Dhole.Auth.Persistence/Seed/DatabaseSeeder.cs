@@ -18,6 +18,7 @@ public sealed class DatabaseSeeder(
     IOptions<SuperAdminSeedOptions> superAdminOptions
 )
 {
+    private const string PricingWorkspaceScope = "pricing.workspace.access";
     private readonly SuperAdminSeedOptions _superAdmin = superAdminOptions.Value;
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
@@ -25,7 +26,7 @@ public sealed class DatabaseSeeder(
         await SeedRolesAsync(cancellationToken);
         await SeedScopesAsync(cancellationToken);
         await AssignAllScopesToSuperUserAsync(cancellationToken);
-        await AssignPricingScopesToPricingRoleAsync(cancellationToken);
+        await EnsurePricingWorkspaceScopeAsync(cancellationToken);
         await SeedSuperAdminAsync(cancellationToken);
     }
 
@@ -74,7 +75,7 @@ public sealed class DatabaseSeeder(
         {
             var pricing = Role.Create(
                 AuthConstants.SystemRoles.Pricing,
-                "Rol operativo con acceso completo al módulo de Pricing.",
+                "Rol operativo base de Pricing. Las vistas y acciones adicionales se habilitan por scope.",
                 isSystemRole: true,
                 createdBy: null
             );
@@ -137,7 +138,7 @@ public sealed class DatabaseSeeder(
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task AssignPricingScopesToPricingRoleAsync(CancellationToken cancellationToken)
+    private async Task EnsurePricingWorkspaceScopeAsync(CancellationToken cancellationToken)
     {
         var pricingRole = await dbContext
             .Roles.Include(x => x.Scopes)
@@ -151,18 +152,21 @@ public sealed class DatabaseSeeder(
             return;
         }
 
-        var pricingScopeIds = await dbContext
-            .Scopes.Where(x => x.IsActive && x.Code.StartsWith("pricing."))
-            .Select(x => x.Id)
-            .ToListAsync(cancellationToken);
+        var workspaceScopeId = await dbContext
+            .Scopes.Where(x => x.IsActive && x.Code == PricingWorkspaceScope)
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        foreach (var scopeId in pricingScopeIds)
+        if (workspaceScopeId is null)
         {
-            pricingRole.AssignScope(scopeId, assignedBy: null);
+            return;
         }
 
+        pricingRole.AssignScope(workspaceScopeId.Value, assignedBy: null);
         await dbContext.SaveChangesAsync(cancellationToken);
 
+        // Permissions beyond the base workspace are intentionally NOT assigned here.
+        // Inbox, import review, logistics news, rates, costs and terms remain scope-gated.
         var pricingUserIds = await dbContext
             .UserRoles.Where(x => x.RoleId == pricingRole.Id)
             .Select(x => x.UserId)
