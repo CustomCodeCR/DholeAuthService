@@ -7,7 +7,11 @@ namespace Dhole.Auth.Api.Endpoints;
 
 public static class InternalPricingRecipientEndpoints
 {
-    private const string PricingReviewScopeCode = "pricing.import-fcl-rate.review";
+    private static readonly string[] PricingNotificationScopeCodes =
+    [
+        "pricing.import-fcl-rate.review",
+        "pricing.rate.update",
+    ];
 
     public static IEndpointRouteBuilder MapInternalPricingRecipientEndpoints(this IEndpointRouteBuilder app)
     {
@@ -26,18 +30,18 @@ public static class InternalPricingRecipientEndpoints
         if (!HasValidServiceKey(request, configuration))
             return Results.Unauthorized();
 
-        var reviewScopeId = await db.Scopes
+        var scopeIds = await db.Scopes
             .AsNoTracking()
-            .Where(x => x.IsActive && x.Code == PricingReviewScopeCode)
-            .Select(x => (Guid?)x.Id)
-            .SingleOrDefaultAsync(cancellationToken);
+            .Where(x => x.IsActive && PricingNotificationScopeCodes.Contains(x.Code))
+            .Select(x => x.Id)
+            .ToArrayAsync(cancellationToken);
 
-        if (!reviewScopeId.HasValue)
+        if (scopeIds.Length == 0)
             return Results.Ok(Array.Empty<object>());
 
         var directUserIds = db.UserScopes
             .AsNoTracking()
-            .Where(x => x.ScopeId == reviewScopeId.Value)
+            .Where(x => scopeIds.Contains(x.ScopeId))
             .Select(x => x.UserId);
 
         var roleUserIds =
@@ -47,7 +51,7 @@ public static class InternalPricingRecipientEndpoints
             where
                 !role.IsDeleted
                 && role.IsActive
-                && roleScope.ScopeId == reviewScopeId.Value
+                && scopeIds.Contains(roleScope.ScopeId)
             select userRole.UserId;
 
         var recipientUserIds = directUserIds.Union(roleUserIds);
