@@ -69,24 +69,24 @@ internal static class PricingScopes
             ),
             ScopeCatalog.Create(
                 "pricing.rate-term.set-active",
-                "Activar/Inactivar condiciones de tarifa",
-                "Permite activar o inactivar condiciones comerciales."
+                "Activar/Inactivar condiciones",
+                "Permite activar o inactivar condiciones comerciales del catálogo."
             ),
             ScopeCatalog.Create(
                 "pricing.rate-term.select",
-                "Seleccionar condiciones de tarifa",
-                "Permite consultar condiciones activas para crear una tarifa."
+                "Seleccionar condiciones",
+                "Permite usar condiciones comerciales al crear o editar tarifas."
             ),
             // Imported FCL rates
             ScopeCatalog.Create(
                 "pricing.import-fcl-rate.create",
                 "Importar tarifas FCL",
-                "Permite subir archivos PDF, Excel o CSV para extraer tarifas FCL."
+                "Permite importar tarifas FCL desde archivos o correo."
             ),
             ScopeCatalog.Create(
                 "pricing.import-fcl-rate.view",
                 "Ver tarifas FCL importadas",
-                "Permite consultar tarifas FCL importadas y su estado."
+                "Permite consultar las tarifas FCL recibidas e importadas."
             ),
             ScopeCatalog.Create(
                 "pricing.import-fcl-rate.delete",
@@ -95,18 +95,24 @@ internal static class PricingScopes
             ),
             ScopeCatalog.Create(
                 "pricing.import-fcl-rate.approve",
-                "Aprobar tarifas FCL importadas",
-                "Permite aprobar tarifas FCL importadas."
+                "Preaprobar tarifas FCL importadas",
+                "Permite preaprobar manualmente tarifas FCL que ya pasaron la preautorización automática."
             ),
             ScopeCatalog.Create(
                 "pricing.import-fcl-rate.reject",
                 "Rechazar tarifas FCL importadas",
-                "Permite rechazar tarifas FCL importadas."
+                "Permite rechazar tarifas FCL recibidas o importadas."
             ),
             ScopeCatalog.Create(
                 "pricing.import-fcl-rate.create-as-rate",
                 "Crear tarifa desde importación FCL",
                 "Permite convertir una tarifa FCL importada en una tarifa oficial."
+            ),
+            // Own LCL consolidations
+            ScopeCatalog.Create(
+                "pricing.own-lcl-consolidation.create",
+                "Crear consolidados LCL propios",
+                "Permite crear consolidados LCL propios. Los administradores mantienen acceso y los demás usuarios requieren este scope."
             ),
             // Rates
             ScopeCatalog.Create(
