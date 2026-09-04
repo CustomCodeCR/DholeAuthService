@@ -30,4 +30,10 @@ public sealed class Scope : Entity<Guid>
             description?.Trim()
         );
     }
+
+    public void UpdateDefinition(string name, string? description)
+    {
+        Name = name.Trim();
+        Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+    }
 }
