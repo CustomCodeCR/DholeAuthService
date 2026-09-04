@@ -7,7 +7,6 @@ internal static class AuthScopeCatalog
             .. AuthScopes.All,
             .. ConfigScopes.All,
             .. AuditLogsScopes.All,
-            .. ScrapingScopes.All,
             .. PricingScopes.All,
             .. AiScopes.All,
             .. StorageScopes.All,
