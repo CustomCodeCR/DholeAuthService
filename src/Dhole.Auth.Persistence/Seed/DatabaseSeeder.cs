@@ -88,27 +88,91 @@ public sealed class DatabaseSeeder(
 
     private async Task SeedScopesAsync(CancellationToken cancellationToken)
     {
-        foreach (var scopeDefinition in AuthScopeCatalog.Scopes)
+        var definitions = AuthScopeCatalog.Scopes
+            .GroupBy(x => x.Code.Trim().ToLowerInvariant(), StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.First())
+            .ToDictionary(
+                x => x.Code.Trim().ToLowerInvariant(),
+                StringComparer.OrdinalIgnoreCase
+            );
+
+        var existingScopes = await dbContext.Scopes.ToListAsync(cancellationToken);
+        var affectedUserIds = new HashSet<Guid>();
+
+        foreach (var scope in existingScopes)
         {
-            var code = scopeDefinition.Code.Trim().ToLowerInvariant();
-
-            var exists = await dbContext.Scopes.AnyAsync(x => x.Code == code, cancellationToken);
-
-            if (exists)
+            if (!definitions.TryGetValue(scope.Code, out var definition))
             {
                 continue;
             }
 
-            var scope = Scope.Create(
-                scopeDefinition.Code,
-                scopeDefinition.Name,
-                scopeDefinition.Description
-            );
+            scope.UpdateDefinition(definition.Name, definition.Description);
+        }
 
-            await dbContext.Scopes.AddAsync(scope, cancellationToken);
+        var existingCodes = existingScopes
+            .Select(x => x.Code)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var definition in definitions.Values)
+        {
+            if (existingCodes.Contains(definition.Code))
+            {
+                continue;
+            }
+
+            await dbContext.Scopes.AddAsync(
+                Scope.Create(definition.Code, definition.Name, definition.Description),
+                cancellationToken
+            );
+        }
+
+        var obsoleteScopeIds = existingScopes
+            .Where(x => !definitions.ContainsKey(x.Code))
+            .Select(x => x.Id)
+            .ToArray();
+
+        if (obsoleteScopeIds.Length > 0)
+        {
+            var directUsers = await dbContext.UserScopes
+                .Where(x => obsoleteScopeIds.Contains(x.ScopeId))
+                .Select(x => x.UserId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+            affectedUserIds.UnionWith(directUsers);
+
+            var affectedRoleIds = await dbContext.RoleScopes
+                .Where(x => obsoleteScopeIds.Contains(x.ScopeId))
+                .Select(x => x.RoleId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            if (affectedRoleIds.Count > 0)
+            {
+                var roleUsers = await dbContext.UserRoles
+                    .Where(x => affectedRoleIds.Contains(x.RoleId))
+                    .Select(x => x.UserId)
+                    .Distinct()
+                    .ToListAsync(cancellationToken);
+                affectedUserIds.UnionWith(roleUsers);
+            }
+
+            await dbContext.UserScopes
+                .Where(x => obsoleteScopeIds.Contains(x.ScopeId))
+                .ExecuteDeleteAsync(cancellationToken);
+            await dbContext.RoleScopes
+                .Where(x => obsoleteScopeIds.Contains(x.ScopeId))
+                .ExecuteDeleteAsync(cancellationToken);
+            await dbContext.Scopes
+                .Where(x => obsoleteScopeIds.Contains(x.Id))
+                .ExecuteDeleteAsync(cancellationToken);
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        foreach (var userId in affectedUserIds)
+        {
+            await permissionCache.RemoveAsync(userId, cancellationToken);
+        }
     }
 
     private async Task AssignAllScopesToSuperUserAsync(CancellationToken cancellationToken)
