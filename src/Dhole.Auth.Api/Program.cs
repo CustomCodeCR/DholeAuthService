@@ -80,6 +80,7 @@ app.MapScopeEndpoints();
 app.MapSessionEndpoints();
 app.MapInternalPricingRecipientEndpoints();
 app.MapDatabaseMaintenanceEndpoints();
+app.MapEnvironmentRecoveryEndpoints();
 
 using (var scope = app.Services.CreateScope())
 {
