@@ -58,9 +58,9 @@ public static class DatabaseMaintenanceEndpoints
                         tables = tables.Select(
                             table => new
                             {
-                                table.schema,
-                                table.name,
-                                key = $"{table.schema}.{table.name}",
+                                schema = table.Schema,
+                                name = table.Name,
+                                key = $"{table.Schema}.{table.Name}",
                                 isProtected = table.IsProtected,
                             }
                         ),
