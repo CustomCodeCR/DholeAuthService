@@ -260,16 +260,6 @@ public sealed class DatabaseSeeder(
             ? userName
             : _superAdmin.DisplayName.Trim();
 
-        var exists = await dbContext.Users.AnyAsync(
-            x => x.Email == email || x.UserName == userName,
-            cancellationToken
-        );
-
-        if (exists)
-        {
-            return;
-        }
-
         var superUserRole = await dbContext.Roles.FirstOrDefaultAsync(
             x => x.Name == AuthConstants.SystemRoles.SuperUser,
             cancellationToken
@@ -277,6 +267,21 @@ public sealed class DatabaseSeeder(
 
         if (superUserRole is null)
         {
+            return;
+        }
+
+        var existingUser = await dbContext.Users
+            .Include(x => x.Roles)
+            .FirstOrDefaultAsync(
+                x => x.Email == email || x.UserName == userName,
+                cancellationToken
+            );
+
+        if (existingUser is not null)
+        {
+            existingUser.AssignRole(superUserRole.Id, assignedBy: null);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await permissionCache.RemoveAsync(existingUser.Id, cancellationToken);
             return;
         }
 
@@ -295,5 +300,6 @@ public sealed class DatabaseSeeder(
 
         await dbContext.Users.AddAsync(user, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
+        await permissionCache.RemoveAsync(user.Id, cancellationToken);
     }
 }

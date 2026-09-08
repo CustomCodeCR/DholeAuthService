@@ -51,5 +51,8 @@ public static class AuthConstants
 
         // Auth actions
         public const string RefreshToken = "auth.refresh-token";
+
+        // Superuser maintenance
+        public const string DatabaseMaintenanceManage = "auth.database-maintenance.manage";
     }
 }
