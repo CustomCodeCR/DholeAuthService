@@ -9,6 +9,7 @@ namespace Dhole.Auth.Api.Endpoints;
 public static class EnvironmentRecoveryEndpoints
 {
     private const string ExpectedConfirmation = "REGENERAR DATOS ENV";
+    private const string ServiceKeyHeader = "X-Internal-Service-Key";
 
     public static IEndpointRouteBuilder MapEnvironmentRecoveryEndpoints(this IEndpointRouteBuilder app)
     {
@@ -24,6 +25,7 @@ public static class EnvironmentRecoveryEndpoints
         EnvironmentReseedRequest request,
         DatabaseSeeder databaseSeeder,
         IOptions<SuperAdminSeedOptions> superAdminOptions,
+        IConfiguration configuration,
         IHostEnvironment hostEnvironment,
         HttpContext httpContext,
         ILoggerFactory loggerFactory,
@@ -56,35 +58,106 @@ public static class EnvironmentRecoveryEndpoints
             return Results.BadRequest(
                 new
                 {
-                    message = "El ambiente actual no tiene configurados todos los datos requeridos de Seed:SuperAdmin en el .env.",
+                    message = "El ambiente actual no tiene configurados todos los datos requeridos de AUTH_SEED_* en su archivo .env.",
                 }
             );
         }
 
         await databaseSeeder.SeedAsync(cancellationToken);
 
+        var restored = new List<string>
+        {
+            "Auth: roles del sistema",
+            "Auth: permisos/scopes",
+            "Auth: asignación de scopes de SuperUsuario",
+            "Auth: SuperUsuario configurado por AUTH_SEED_*",
+        };
+
+        var dataExtractionResult = await ReseedDataExtractionAsync(
+            configuration,
+            cancellationToken
+        );
+        if (!dataExtractionResult.Success)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status502BadGateway,
+                title: "Auth fue regenerado, pero DataExtraction no pudo regenerar sus datos del ambiente.",
+                detail: dataExtractionResult.Error
+            );
+        }
+
+        if (dataExtractionResult.EmailRestored)
+        {
+            restored.Add("DataExtraction: cuenta de correo configurada desde el env del ambiente");
+        }
+
         var logger = loggerFactory.CreateLogger("Dhole.EnvironmentRecovery");
         logger.LogWarning(
-            "SUPERUSER ENVIRONMENT RESEED executed. Environment={Environment} Actor={Actor}",
+            "SUPERUSER ENVIRONMENT RESEED executed. Environment={Environment} Actor={Actor} DataExtractionEmailRestored={DataExtractionEmailRestored}",
             hostEnvironment.EnvironmentName,
-            ResolveActor(httpContext.User)
+            ResolveActor(httpContext.User),
+            dataExtractionResult.EmailRestored
         );
 
         return Results.Ok(
             new
             {
                 environment = hostEnvironment.EnvironmentName,
-                restored = new[]
-                {
-                    "roles del sistema",
-                    "permisos/scopes",
-                    "asignación de scopes de SuperUsuario",
-                    "SuperUsuario configurado en Seed:SuperAdmin",
-                },
+                restored = restored.ToArray(),
                 secretValuesReturned = false,
                 completedAtUtc = DateTimeOffset.UtcNow,
             }
         );
+    }
+
+    private static async Task<DataExtractionReseedResult> ReseedDataExtractionAsync(
+        IConfiguration configuration,
+        CancellationToken cancellationToken
+    )
+    {
+        var baseUrl = configuration["DATAEXTRACTION_HTTP_URL"]
+            ?? configuration["DataExtraction:HttpUrl"];
+        var serviceKey = configuration["INTERNAL_SERVICE_KEY"]
+            ?? configuration["InternalServices:ServiceKey"];
+
+        if (string.IsNullOrWhiteSpace(baseUrl))
+        {
+            return new DataExtractionReseedResult(false, false, "Falta DATAEXTRACTION_HTTP_URL en el ambiente actual.");
+        }
+
+        if (string.IsNullOrWhiteSpace(serviceKey))
+        {
+            return new DataExtractionReseedResult(false, false, "Falta INTERNAL_SERVICE_KEY en el ambiente actual.");
+        }
+
+        var endpoint = $"{baseUrl.TrimEnd('/')}/api/internal/data-extraction/environment-reseed";
+
+        try
+        {
+            using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            using var message = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            message.Headers.TryAddWithoutValidation(ServiceKeyHeader, serviceKey);
+            using var response = await client.SendAsync(message, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new DataExtractionReseedResult(
+                    false,
+                    false,
+                    $"DataExtraction respondió HTTP {(int)response.StatusCode}."
+                );
+            }
+
+            return new DataExtractionReseedResult(true, true, null);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
+        {
+            return new DataExtractionReseedResult(
+                false,
+                false,
+                $"No se pudo contactar DataExtraction: {ex.Message}"
+            );
+        }
     }
 
     private static bool IsSystemSuperUser(ClaimsPrincipal user)
@@ -119,4 +192,5 @@ public static class EnvironmentRecoveryEndpoints
     }
 
     public sealed record EnvironmentReseedRequest(string? Confirmation);
+    private sealed record DataExtractionReseedResult(bool Success, bool EmailRestored, string? Error);
 }
