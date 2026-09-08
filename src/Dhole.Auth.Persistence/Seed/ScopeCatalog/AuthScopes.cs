@@ -91,5 +91,10 @@ internal static class AuthScopes
                 "Revocar todas las sesiones",
                 "Permite revocar todas las sesiones de un usuario."
             ),
+            ScopeCatalog.Create(
+                "auth.database-maintenance.manage",
+                "Administrar mantenimiento de bases de datos",
+                "Permite consultar y ejecutar truncados controlados. El endpoint además exige el rol de sistema SuperUsuario."
+            ),
         ];
 }
