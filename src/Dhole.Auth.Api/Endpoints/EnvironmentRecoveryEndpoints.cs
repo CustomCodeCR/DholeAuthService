@@ -73,8 +73,12 @@ public static class EnvironmentRecoveryEndpoints
             "Auth: SuperUsuario configurado por AUTH_SEED_*",
         };
 
-        var dataExtractionResult = await ReseedDataExtractionAsync(
+        var dataExtractionResult = await ReseedInternalServiceAsync(
             configuration,
+            "DATAEXTRACTION_HTTP_URL",
+            "DataExtraction:HttpUrl",
+            "/api/internal/data-extraction/environment-reseed",
+            "DataExtraction",
             cancellationToken
         );
         if (!dataExtractionResult.Success)
@@ -86,17 +90,34 @@ public static class EnvironmentRecoveryEndpoints
             );
         }
 
-        if (dataExtractionResult.EmailRestored)
+        restored.Add("DataExtraction: cuenta de correo configurada desde el env del ambiente");
+
+        var storageResult = await ReseedInternalServiceAsync(
+            configuration,
+            "STORAGE_HTTP_URL",
+            "Storage:HttpUrl",
+            "/api/internal/storage/environment-reseed",
+            "Storage",
+            cancellationToken
+        );
+        if (!storageResult.Success)
         {
-            restored.Add("DataExtraction: cuenta de correo configurada desde el env del ambiente");
+            return Results.Problem(
+                statusCode: StatusCodes.Status502BadGateway,
+                title: "Auth y DataExtraction fueron regenerados, pero Storage no pudo regenerar sus datos del ambiente.",
+                detail: storageResult.Error
+            );
         }
+
+        restored.Add("Storage: proveedor MinIO predeterminado configurado desde el env del ambiente");
 
         var logger = loggerFactory.CreateLogger("Dhole.EnvironmentRecovery");
         logger.LogWarning(
-            "SUPERUSER ENVIRONMENT RESEED executed. Environment={Environment} Actor={Actor} DataExtractionEmailRestored={DataExtractionEmailRestored}",
+            "SUPERUSER ENVIRONMENT RESEED executed. Environment={Environment} Actor={Actor} DataExtractionRestored={DataExtractionRestored} StorageRestored={StorageRestored}",
             hostEnvironment.EnvironmentName,
             ResolveActor(httpContext.User),
-            dataExtractionResult.EmailRestored
+            dataExtractionResult.Success,
+            storageResult.Success
         );
 
         return Results.Ok(
@@ -110,27 +131,36 @@ public static class EnvironmentRecoveryEndpoints
         );
     }
 
-    private static async Task<DataExtractionReseedResult> ReseedDataExtractionAsync(
+    private static async Task<InternalServiceReseedResult> ReseedInternalServiceAsync(
         IConfiguration configuration,
+        string primaryUrlKey,
+        string fallbackUrlKey,
+        string endpointPath,
+        string serviceName,
         CancellationToken cancellationToken
     )
     {
-        var baseUrl = configuration["DATAEXTRACTION_HTTP_URL"]
-            ?? configuration["DataExtraction:HttpUrl"];
+        var baseUrl = configuration[primaryUrlKey] ?? configuration[fallbackUrlKey];
         var serviceKey = configuration["INTERNAL_SERVICE_KEY"]
             ?? configuration["InternalServices:ServiceKey"];
 
         if (string.IsNullOrWhiteSpace(baseUrl))
         {
-            return new DataExtractionReseedResult(false, false, "Falta DATAEXTRACTION_HTTP_URL en el ambiente actual.");
+            return new InternalServiceReseedResult(
+                false,
+                $"Falta {primaryUrlKey} en el ambiente actual."
+            );
         }
 
         if (string.IsNullOrWhiteSpace(serviceKey))
         {
-            return new DataExtractionReseedResult(false, false, "Falta INTERNAL_SERVICE_KEY en el ambiente actual.");
+            return new InternalServiceReseedResult(
+                false,
+                "Falta INTERNAL_SERVICE_KEY en el ambiente actual."
+            );
         }
 
-        var endpoint = $"{baseUrl.TrimEnd('/')}/api/internal/data-extraction/environment-reseed";
+        var endpoint = $"{baseUrl.TrimEnd('/')}{endpointPath}";
 
         try
         {
@@ -141,21 +171,19 @@ public static class EnvironmentRecoveryEndpoints
 
             if (!response.IsSuccessStatusCode)
             {
-                return new DataExtractionReseedResult(
+                return new InternalServiceReseedResult(
                     false,
-                    false,
-                    $"DataExtraction respondió HTTP {(int)response.StatusCode}."
+                    $"{serviceName} respondió HTTP {(int)response.StatusCode}."
                 );
             }
 
-            return new DataExtractionReseedResult(true, true, null);
+            return new InternalServiceReseedResult(true, null);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            return new DataExtractionReseedResult(
+            return new InternalServiceReseedResult(
                 false,
-                false,
-                $"No se pudo contactar DataExtraction: {ex.Message}"
+                $"No se pudo contactar {serviceName}: {ex.Message}"
             );
         }
     }
@@ -192,5 +220,5 @@ public static class EnvironmentRecoveryEndpoints
     }
 
     public sealed record EnvironmentReseedRequest(string? Confirmation);
-    private sealed record DataExtractionReseedResult(bool Success, bool EmailRestored, string? Error);
+    private sealed record InternalServiceReseedResult(bool Success, string? Error);
 }
