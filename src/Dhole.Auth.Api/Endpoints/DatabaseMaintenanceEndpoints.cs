@@ -1,9 +1,10 @@
 using System.Security.Claims;
 using Dhole.Auth.Api.Authorization;
 using Dhole.Auth.Domain.Shared;
+using Dhole.Auth.Persistence.DbContexts;
+using Dhole.Auth.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using Dhole.Auth.Persistence.DbContexts;
 
 namespace Dhole.Auth.Api.Endpoints;
 
@@ -90,6 +91,7 @@ public static class DatabaseMaintenanceEndpoints
                     superUserOnly = true,
                     migrationHistoryProtected = true,
                     databaseOperationKeepsSchema = true,
+                    authSuperUserRecovery = true,
                 },
             }
         );
@@ -98,6 +100,7 @@ public static class DatabaseMaintenanceEndpoints
     private static async Task<IResult> TruncateAsync(
         DatabaseTruncateRequest request,
         ServiceDbContext dbContext,
+        DatabaseSeeder databaseSeeder,
         IConfiguration configuration,
         IHostEnvironment hostEnvironment,
         HttpContext httpContext,
@@ -214,17 +217,27 @@ public static class DatabaseMaintenanceEndpoints
             );
         }
 
+        var authDatabase = dbContext.Database.GetDbConnection().Database;
+        var authRecovered = false;
+        if (string.Equals(database, authDatabase, StringComparison.OrdinalIgnoreCase))
+        {
+            dbContext.ChangeTracker.Clear();
+            await databaseSeeder.SeedAsync(cancellationToken);
+            authRecovered = true;
+        }
+
         var logger = loggerFactory.CreateLogger("Dhole.DatabaseMaintenance");
         var actor = ResolveActor(httpContext.User);
         logger.LogWarning(
-            "SUPERUSER DATABASE TRUNCATE executed. Environment={Environment} Database={Database} Mode={Mode} Table={Table} Cascade={Cascade} Actor={Actor} Targets={TargetCount}",
+            "SUPERUSER DATABASE TRUNCATE executed. Environment={Environment} Database={Database} Mode={Mode} Table={Table} Cascade={Cascade} Actor={Actor} Targets={TargetCount} AuthRecovered={AuthRecovered}",
             hostEnvironment.EnvironmentName,
             database,
             mode,
             request.Table,
             mode == "database" || request.Cascade,
             actor,
-            targets.Count
+            targets.Count,
+            authRecovered
         );
 
         return Results.Ok(
@@ -236,6 +249,7 @@ public static class DatabaseMaintenanceEndpoints
                 table = mode == "table" ? $"{targets[0].Schema}.{targets[0].Name}" : null,
                 cascade = mode == "database" || request.Cascade,
                 tablesTruncated = targets.Count,
+                authRecovered,
                 completedAtUtc = DateTimeOffset.UtcNow,
             }
         );
