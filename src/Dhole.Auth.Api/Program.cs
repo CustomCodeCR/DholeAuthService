@@ -10,8 +10,14 @@ using Dhole.Auth.Persistence.DbContexts;
 using Dhole.Auth.Persistence.DependencyInjection;
 using Dhole.Auth.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Dhole server env files use flat aliases. Map them before Auth options are bound.
+builder.Configuration.AddInMemoryCollection(
+    AuthEnvironmentConfiguration.BuildOverrides(builder.Configuration)
+);
 
 const string CorsPolicyName = "DholeWebCors";
 
