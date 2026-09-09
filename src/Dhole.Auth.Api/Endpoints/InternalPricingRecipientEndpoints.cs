@@ -13,11 +13,18 @@ public static class InternalPricingRecipientEndpoints
         "pricing.rate.update",
     ];
 
+    private const string PricingSellerScopeCode = "pricing.rate-request.create";
+
     public static IEndpointRouteBuilder MapInternalPricingRecipientEndpoints(this IEndpointRouteBuilder app)
     {
         app.MapGet("/api/internal/auth/pricing-notification-recipients", GetPricingRecipientsAsync)
             .WithTags("Internal")
             .AllowAnonymous();
+
+        app.MapGet("/api/internal/auth/pricing-sellers", GetPricingSellersAsync)
+            .WithTags("Internal")
+            .AllowAnonymous();
+
         return app;
     }
 
@@ -30,14 +37,46 @@ public static class InternalPricingRecipientEndpoints
         if (!HasValidServiceKey(request, configuration))
             return Results.Unauthorized();
 
+        var recipients = await GetActiveUsersWithAnyScopeAsync(
+            db,
+            PricingNotificationScopeCodes,
+            cancellationToken
+        );
+
+        return Results.Ok(recipients);
+    }
+
+    private static async Task<IResult> GetPricingSellersAsync(
+        HttpRequest request,
+        IConfiguration configuration,
+        ServiceDbContext db,
+        CancellationToken cancellationToken)
+    {
+        if (!HasValidServiceKey(request, configuration))
+            return Results.Unauthorized();
+
+        var sellers = await GetActiveUsersWithAnyScopeAsync(
+            db,
+            [PricingSellerScopeCode],
+            cancellationToken
+        );
+
+        return Results.Ok(sellers);
+    }
+
+    private static async Task<IReadOnlyList<InternalPricingUser>> GetActiveUsersWithAnyScopeAsync(
+        ServiceDbContext db,
+        IReadOnlyCollection<string> scopeCodes,
+        CancellationToken cancellationToken)
+    {
         var scopeIds = await db.Scopes
             .AsNoTracking()
-            .Where(x => x.IsActive && PricingNotificationScopeCodes.Contains(x.Code))
+            .Where(x => x.IsActive && scopeCodes.Contains(x.Code))
             .Select(x => x.Id)
             .ToArrayAsync(cancellationToken);
 
         if (scopeIds.Length == 0)
-            return Results.Ok(Array.Empty<object>());
+            return [];
 
         var directUserIds = db.UserScopes
             .AsNoTracking()
@@ -56,7 +95,7 @@ public static class InternalPricingRecipientEndpoints
 
         var recipientUserIds = directUserIds.Union(roleUserIds);
 
-        var recipients = await db.Users
+        return await db.Users
             .AsNoTracking()
             .Where(x =>
                 !x.IsDeleted
@@ -64,16 +103,14 @@ public static class InternalPricingRecipientEndpoints
                 && !x.IsLocked
                 && recipientUserIds.Contains(x.Id))
             .OrderBy(x => x.DisplayName)
-            .Select(x => new
-            {
-                userId = x.Id,
-                email = x.Email,
-                displayName = x.DisplayName,
-                userName = x.UserName,
-            })
+            .ThenBy(x => x.UserName)
+            .Select(x => new InternalPricingUser(
+                x.Id,
+                x.Email,
+                x.DisplayName,
+                x.UserName
+            ))
             .ToListAsync(cancellationToken);
-
-        return Results.Ok(recipients);
     }
 
     private static bool HasValidServiceKey(HttpRequest request, IConfiguration configuration)
@@ -92,4 +129,11 @@ public static class InternalPricingRecipientEndpoints
         return expectedBytes.Length == suppliedBytes.Length
             && CryptographicOperations.FixedTimeEquals(expectedBytes, suppliedBytes);
     }
+
+    private sealed record InternalPricingUser(
+        Guid UserId,
+        string? Email,
+        string? DisplayName,
+        string? UserName
+    );
 }
