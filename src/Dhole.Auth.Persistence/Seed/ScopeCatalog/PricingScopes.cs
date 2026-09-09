@@ -49,6 +49,11 @@ internal static class PricingScopes
                 "Permite consultar y exportar las solicitudes y tarifas de todos los vendedores."
             ),
             ScopeCatalog.Create(
+                "pricing.rate-request.report.view-all",
+                "Ver reporte completo de tarifas solicitadas",
+                "Permite consultar y exportar el reporte de todas las tarifas solicitadas sin otorgar permisos operativos globales sobre Pricing."
+            ),
+            ScopeCatalog.Create(
                 "pricing.rate-request.visibility.manage",
                 "Administrar visibilidad de vendedores",
                 "Scope legado para compatibilidad con asignaciones comerciales existentes."
