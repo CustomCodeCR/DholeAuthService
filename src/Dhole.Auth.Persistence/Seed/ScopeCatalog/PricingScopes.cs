@@ -39,9 +39,19 @@ internal static class PricingScopes
                 "Permite a vendedores completar las pantallas iniciales del wizard y enviar una solicitud abierta a Pricing."
             ),
             ScopeCatalog.Create(
+                "pricing.rate-request.view-selected",
+                "Ver solicitudes de vendedores asignados",
+                "Permite consultar y exportar las solicitudes y tarifas propias y únicamente de los vendedores asignados al usuario."
+            ),
+            ScopeCatalog.Create(
                 "pricing.rate-request.view-all",
                 "Ver todas las solicitudes de tarifa",
-                "Permite consultar y exportar las solicitudes de tarifa de todos los vendedores."
+                "Permite consultar y exportar las solicitudes y tarifas de todos los vendedores."
+            ),
+            ScopeCatalog.Create(
+                "pricing.rate-request.visibility.manage",
+                "Administrar visibilidad de vendedores",
+                "Permite definir qué vendedores puede consultar un usuario con visibilidad comercial limitada."
             ),
             ScopeCatalog.Create("pricing.rate.create", "Crear tarifas", "Permite crear tarifas oficiales de Pricing."),
             ScopeCatalog.Create("pricing.rate.view", "Ver tarifas", "Permite consultar tarifas oficiales de Pricing."),
