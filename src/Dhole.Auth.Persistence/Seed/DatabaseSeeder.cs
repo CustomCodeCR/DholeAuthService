@@ -19,12 +19,19 @@ public sealed class DatabaseSeeder(
 )
 {
     private const string PricingWorkspaceScope = "pricing.workspace.access";
+    private const string RateRequestCreateScope = "pricing.rate-request.create";
+    private const string RateRequestViewSelectedScope = "pricing.rate-request.view-selected";
+    private const string RateRequestViewAllScope = "pricing.rate-request.view-all";
+    private const string SellerSupervisorRole = "Vendedor Supervisor";
+    private const string SellerChiefRole = "Vendedor Jefe";
+
     private readonly SuperAdminSeedOptions _superAdmin = superAdminOptions.Value;
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
         await SeedRolesAsync(cancellationToken);
         await SeedScopesAsync(cancellationToken);
+        await EnsureSellerVisibilityRoleScopesAsync(cancellationToken);
         await AssignAllScopesToSuperUserAsync(cancellationToken);
         await EnsurePricingWorkspaceScopeAsync(cancellationToken);
         await SeedSuperAdminAsync(cancellationToken);
@@ -81,6 +88,32 @@ public sealed class DatabaseSeeder(
             );
 
             await dbContext.Roles.AddAsync(pricing, cancellationToken);
+        }
+
+        if (!await dbContext.Roles.AnyAsync(x => x.Name == SellerSupervisorRole, cancellationToken))
+        {
+            await dbContext.Roles.AddAsync(
+                Role.Create(
+                    SellerSupervisorRole,
+                    "Vendedor que puede consultar sus solicitudes y tarifas, más las de vendedores que le sean asignados explícitamente.",
+                    isSystemRole: true,
+                    createdBy: null
+                ),
+                cancellationToken
+            );
+        }
+
+        if (!await dbContext.Roles.AnyAsync(x => x.Name == SellerChiefRole, cancellationToken))
+        {
+            await dbContext.Roles.AddAsync(
+                Role.Create(
+                    SellerChiefRole,
+                    "Vendedor jefe con visibilidad de las solicitudes y tarifas de todos los vendedores.",
+                    isSystemRole: true,
+                    createdBy: null
+                ),
+                cancellationToken
+            );
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -173,6 +206,57 @@ public sealed class DatabaseSeeder(
         {
             await permissionCache.RemoveAsync(userId, cancellationToken);
         }
+    }
+
+    private async Task EnsureSellerVisibilityRoleScopesAsync(CancellationToken cancellationToken)
+    {
+        var scopeIds = await dbContext.Scopes
+            .Where(x => x.IsActive && new[]
+            {
+                RateRequestCreateScope,
+                RateRequestViewSelectedScope,
+                RateRequestViewAllScope,
+            }.Contains(x.Code))
+            .ToDictionaryAsync(x => x.Code, x => x.Id, cancellationToken);
+
+        var roleScopes = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            [SellerSupervisorRole] = [RateRequestCreateScope, RateRequestViewSelectedScope],
+            [SellerChiefRole] = [RateRequestCreateScope, RateRequestViewAllScope],
+        };
+
+        foreach (var definition in roleScopes)
+        {
+            var role = await dbContext.Roles
+                .Include(x => x.Scopes)
+                .FirstOrDefaultAsync(x => x.Name == definition.Key, cancellationToken);
+
+            if (role is null)
+            {
+                continue;
+            }
+
+            foreach (var scopeCode in definition.Value)
+            {
+                if (scopeIds.TryGetValue(scopeCode, out var scopeId))
+                {
+                    role.AssignScope(scopeId, assignedBy: null);
+                }
+            }
+
+            var userIds = await dbContext.UserRoles
+                .Where(x => x.RoleId == role.Id)
+                .Select(x => x.UserId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            foreach (var userId in userIds)
+            {
+                await permissionCache.RemoveAsync(userId, cancellationToken);
+            }
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task AssignAllScopesToSuperUserAsync(CancellationToken cancellationToken)
