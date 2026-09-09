@@ -51,7 +51,12 @@ internal static class PricingScopes
             ScopeCatalog.Create(
                 "pricing.rate-request.visibility.manage",
                 "Administrar visibilidad de vendedores",
-                "Permite definir qué vendedores puede consultar un usuario con visibilidad comercial limitada."
+                "Scope legado para compatibilidad con asignaciones comerciales existentes."
+            ),
+            ScopeCatalog.Create(
+                "pricing.seller.assignment.manage",
+                "Asignar vendedores",
+                "Permite asignar vendedores a otro usuario y administrar la visibilidad comercial delegada."
             ),
             ScopeCatalog.Create("pricing.rate.create", "Crear tarifas", "Permite crear tarifas oficiales de Pricing."),
             ScopeCatalog.Create("pricing.rate.view", "Ver tarifas", "Permite consultar tarifas oficiales de Pricing."),
