@@ -40,6 +40,17 @@ jobs:
           set -euo pipefail
           docker network inspect "$DHOLE_NETWORK" >/dev/null
           docker compose --env-file "$DHOLE_ENV_FILE" -f "$COMPOSE_FILE" -f "$COMPOSE_OVERRIDE" -p "$COMPOSE_PROJECT" config -q
+      - name: Reclaim Docker build space
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Disk before cleanup:"
+          df -h /
+          docker builder prune -af || true
+          docker container prune -f || true
+          docker image prune -af || true
+          echo "Disk after cleanup:"
+          df -h /
       - name: Build images
         shell: bash
         env:
@@ -56,4 +67,6 @@ jobs:
           docker compose --env-file "$DHOLE_ENV_FILE" -f "$COMPOSE_FILE" -f "$COMPOSE_OVERRIDE" -p "$COMPOSE_PROJECT" up -d --no-deps --force-recreate --pull never auth-api auth-workers
           docker compose --env-file "$DHOLE_ENV_FILE" -f "$COMPOSE_FILE" -f "$COMPOSE_OVERRIDE" -p "$COMPOSE_PROJECT" ps auth-api auth-workers
       - name: Cleanup old images
+        if: always()
+        continue-on-error: true
         run: docker image prune -f
