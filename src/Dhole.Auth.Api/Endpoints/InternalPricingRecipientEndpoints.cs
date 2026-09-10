@@ -14,6 +14,7 @@ public static class InternalPricingRecipientEndpoints
     ];
 
     private const string PricingSellerScopeCode = "pricing.rate-request.create";
+    private const string PricingSalesExecutiveRoleName = "Vendedor";
 
     public static IEndpointRouteBuilder MapInternalPricingRecipientEndpoints(this IEndpointRouteBuilder app)
     {
@@ -22,6 +23,10 @@ public static class InternalPricingRecipientEndpoints
             .AllowAnonymous();
 
         app.MapGet("/api/internal/auth/pricing-sellers", GetPricingSellersAsync)
+            .WithTags("Internal")
+            .AllowAnonymous();
+
+        app.MapGet("/api/internal/auth/pricing-sales-executives", GetPricingSalesExecutivesAsync)
             .WithTags("Internal")
             .AllowAnonymous();
 
@@ -64,6 +69,24 @@ public static class InternalPricingRecipientEndpoints
         return Results.Ok(sellers);
     }
 
+    private static async Task<IResult> GetPricingSalesExecutivesAsync(
+        HttpRequest request,
+        IConfiguration configuration,
+        ServiceDbContext db,
+        CancellationToken cancellationToken)
+    {
+        if (!HasValidServiceKey(request, configuration))
+            return Results.Unauthorized();
+
+        var executives = await GetActiveUsersWithRoleAsync(
+            db,
+            PricingSalesExecutiveRoleName,
+            cancellationToken
+        );
+
+        return Results.Ok(executives);
+    }
+
     private static async Task<IReadOnlyList<InternalPricingUser>> GetActiveUsersWithAnyScopeAsync(
         ServiceDbContext db,
         IReadOnlyCollection<string> scopeCodes,
@@ -95,13 +118,39 @@ public static class InternalPricingRecipientEndpoints
 
         var recipientUserIds = directUserIds.Union(roleUserIds);
 
+        return await GetActiveUsersAsync(db, recipientUserIds, cancellationToken);
+    }
+
+    private static async Task<IReadOnlyList<InternalPricingUser>> GetActiveUsersWithRoleAsync(
+        ServiceDbContext db,
+        string roleName,
+        CancellationToken cancellationToken)
+    {
+        var normalizedRoleName = roleName.Trim().ToLower();
+        var roleUserIds =
+            from userRole in db.UserRoles.AsNoTracking()
+            join role in db.Roles.AsNoTracking() on userRole.RoleId equals role.Id
+            where
+                !role.IsDeleted
+                && role.IsActive
+                && role.Name.ToLower() == normalizedRoleName
+            select userRole.UserId;
+
+        return await GetActiveUsersAsync(db, roleUserIds, cancellationToken);
+    }
+
+    private static async Task<IReadOnlyList<InternalPricingUser>> GetActiveUsersAsync(
+        ServiceDbContext db,
+        IQueryable<Guid> userIds,
+        CancellationToken cancellationToken)
+    {
         return await db.Users
             .AsNoTracking()
             .Where(x =>
                 !x.IsDeleted
                 && x.IsActive
                 && !x.IsLocked
-                && recipientUserIds.Contains(x.Id))
+                && userIds.Contains(x.Id))
             .OrderBy(x => x.DisplayName)
             .ThenBy(x => x.UserName)
             .Select(x => new InternalPricingUser(
