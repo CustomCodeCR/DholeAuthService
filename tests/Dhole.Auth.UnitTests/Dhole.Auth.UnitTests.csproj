@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\src\Dhole.Auth.Domain\Dhole.Auth.Domain.csproj" />
     <ProjectReference Include="..\..\src\Dhole.Auth.Application\Dhole.Auth.Application.csproj" />
     <ProjectReference Include="..\..\src\Dhole.Auth.Contracts\Dhole.Auth.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Dhole.Auth.Persistence\Dhole.Auth.Persistence.csproj" />
   </ItemGroup>
 
 </Project>
