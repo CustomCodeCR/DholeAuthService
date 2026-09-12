@@ -9,6 +9,7 @@ public static class AuthConstants
         public const string Administrator = "Administrador";
         public const string SuperUser = "SuperUsuario";
         public const string Pricing = "Pricing";
+        public const string Marketing = "Mercadeo";
     }
 
     public static class Scopes
