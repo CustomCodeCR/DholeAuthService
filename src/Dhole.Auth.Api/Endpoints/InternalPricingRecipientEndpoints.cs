@@ -42,9 +42,24 @@ public static class InternalPricingRecipientEndpoints
         if (!HasValidServiceKey(request, configuration))
             return Results.Unauthorized();
 
+        var requiredScope = request.Query["requiredScope"].FirstOrDefault()?.Trim();
+        if (!string.IsNullOrWhiteSpace(requiredScope)
+            && !requiredScope.StartsWith("pricing.", StringComparison.OrdinalIgnoreCase))
+        {
+            return Results.BadRequest(new
+            {
+                code = "Auth.InvalidPricingNotificationScope",
+                message = "El scope requerido debe pertenecer al módulo de Pricing."
+            });
+        }
+
+        IReadOnlyCollection<string> scopeCodes = string.IsNullOrWhiteSpace(requiredScope)
+            ? PricingNotificationScopeCodes
+            : [requiredScope];
+
         var recipients = await GetActiveUsersWithAnyScopeAsync(
             db,
-            PricingNotificationScopeCodes,
+            scopeCodes,
             cancellationToken
         );
 
