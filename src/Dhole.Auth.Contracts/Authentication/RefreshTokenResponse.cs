@@ -8,5 +8,6 @@ public sealed record RefreshTokenResponse(
     DateTime RefreshTokenExpiresAt,
     string DisplayName,
     string UserName,
-    string Email
+    string Email,
+    bool MustChangePassword
 );
