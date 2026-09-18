@@ -41,7 +41,11 @@ public sealed class IssueUserCredentialsCommandHandler(
         var before = UserAuditSnapshot.From(user);
         var temporaryPassword = GenerateTemporaryPassword();
 
-        user.ChangePassword(passwordHasher.Hash(temporaryPassword), command.IssuedBy);
+        user.ChangePassword(
+            passwordHasher.Hash(temporaryPassword),
+            command.IssuedBy,
+            mustChangePassword: true
+        );
 
         var after = UserAuditSnapshot.From(user);
         users.Update(user);
