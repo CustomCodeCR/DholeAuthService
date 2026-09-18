@@ -32,6 +32,11 @@ internal static class AuthScopes
                 "Permite cambiar contraseñas de usuarios."
             ),
             ScopeCatalog.Create(
+                "auth.users.send-credentials",
+                "Enviar credenciales de usuarios",
+                "Permite generar una contraseña temporal y enviar las credenciales de acceso a un usuario."
+            ),
+            ScopeCatalog.Create(
                 "auth.users.roles.assign",
                 "Asignar roles a usuarios",
                 "Permite asignar roles a usuarios."
