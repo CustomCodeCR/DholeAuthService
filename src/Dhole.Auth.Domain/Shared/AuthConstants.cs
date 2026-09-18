@@ -21,6 +21,7 @@ public static class AuthConstants
         public const string UserSetActive = "auth.users.set-active";
         public const string UserSetLocked = "auth.users.set-locked";
         public const string UserChangePassword = "auth.users.change-password";
+        public const string UserSendCredentials = "auth.users.send-credentials";
 
         // User roles
         public const string UserRoleAssign = "auth.users.roles.assign";
