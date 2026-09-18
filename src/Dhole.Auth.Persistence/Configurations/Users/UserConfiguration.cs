@@ -43,6 +43,7 @@ internal sealed class UserConfiguration : EntityTypeConfigurationBase<User, Guid
         builder.Property(x => x.LastFailedLoginAt);
 
         builder.Property(x => x.TokenVersion).IsRequired().HasDefaultValue(0);
+        builder.Property(x => x.MustChangePassword).IsRequired().HasDefaultValue(false);
 
         builder
             .HasMany(x => x.Roles)
