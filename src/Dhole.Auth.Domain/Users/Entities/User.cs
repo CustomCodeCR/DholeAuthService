@@ -32,6 +32,7 @@ public sealed class User : SoftDeletableAggregateRoot<Guid>
         IsLocked = false;
         FailedLoginAttempts = 0;
         TokenVersion = 0;
+        MustChangePassword = false;
 
         MarkAsCreated(DateTime.UtcNow, createdBy?.ToString());
     }
@@ -53,6 +54,7 @@ public sealed class User : SoftDeletableAggregateRoot<Guid>
     public DateTime? LastFailedLoginAt { get; private set; }
 
     public int TokenVersion { get; private set; }
+    public bool MustChangePassword { get; private set; }
 
     public IReadOnlyCollection<UserRole> Roles => _roles;
     public IReadOnlyCollection<UserScope> Scopes => _scopes;
@@ -107,9 +109,14 @@ public sealed class User : SoftDeletableAggregateRoot<Guid>
         AddDomainEvent(new UserUpdatedDomainEvent(Id, UserName, Email, DisplayName, updatedBy));
     }
 
-    public void ChangePassword(string passwordHash, Guid? updatedBy = null)
+    public void ChangePassword(
+        string passwordHash,
+        Guid? updatedBy = null,
+        bool mustChangePassword = false
+    )
     {
         PasswordHash = passwordHash;
+        MustChangePassword = mustChangePassword;
 
         IncreaseTokenVersion();
 
