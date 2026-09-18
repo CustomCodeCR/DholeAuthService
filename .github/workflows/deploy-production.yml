@@ -56,6 +56,34 @@ jobs:
           set -euo pipefail
           docker compose --env-file "$DHOLE_ENV_FILE" -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT" up -d --no-deps --force-recreate --pull never auth-api auth-workers
           docker compose --env-file "$DHOLE_ENV_FILE" -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT" ps auth-api auth-workers
+      - name: Verify Auth health after startup
+        shell: bash
+        run: |
+          set -euo pipefail
+          CONTAINER_ID="$(docker compose --env-file "$DHOLE_ENV_FILE" -f "$COMPOSE_FILE" -p "$COMPOSE_PROJECT" ps -q auth-api)"
+          test -n "$CONTAINER_ID"
+
+          for attempt in $(seq 1 30); do
+            state="$(docker inspect --format '{{.State.Status}}' "$CONTAINER_ID")"
+            if [[ "$state" != "running" ]]; then
+              echo "auth-api stopped while starting (state=$state)"
+              docker logs --tail 250 "$CONTAINER_ID" || true
+              exit 1
+            fi
+
+            container_ip="$(docker inspect --format '{{range .NetworkSettings.Networks}}{{println .IPAddress}}{{end}}' "$CONTAINER_ID" | head -n1 | tr -d '[:space:]')"
+            if [[ -n "$container_ip" ]] && curl --fail --silent --show-error --max-time 3 "http://$container_ip:8080/health" >/dev/null; then
+              echo "auth-api is healthy at $container_ip:8080"
+              exit 0
+            fi
+
+            sleep 2
+          done
+
+          echo "auth-api did not become healthy in time"
+          docker logs --tail 250 "$CONTAINER_ID" || true
+          exit 1
+
       - name: Keep only master and develop branches
         shell: bash
         run: |
