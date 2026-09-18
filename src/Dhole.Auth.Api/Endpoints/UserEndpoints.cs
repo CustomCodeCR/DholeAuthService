@@ -12,6 +12,7 @@ using Dhole.Auth.Application.Users.GetUserPermissions;
 using Dhole.Auth.Application.Users.GetUserRoles;
 using Dhole.Auth.Application.Users.GetUsers;
 using Dhole.Auth.Application.Users.GetUserScopes;
+using Dhole.Auth.Application.Users.IssueUserCredentials;
 using Dhole.Auth.Application.Users.RevokeRolesFromUser;
 using Dhole.Auth.Application.Users.RevokeScopesFromUser;
 using Dhole.Auth.Application.Users.SetUserActive;
@@ -172,6 +173,24 @@ public static class UserEndpoints
                 return EndpointResults.FromResult(result, httpContext);
             }
         ).RequireScope(AuthScopeNames.UsersChangePassword);
+
+        group.MapPost(
+            "/{userId:guid}/access-credentials",
+            async (
+                Guid userId,
+                ICommandDispatcher dispatcher,
+                HttpContext httpContext,
+                CancellationToken cancellationToken
+            ) =>
+            {
+                var result = await dispatcher.DispatchAsync(
+                    new IssueUserCredentialsCommand(userId, httpContext.GetCurrentUserId()),
+                    cancellationToken
+                );
+
+                return EndpointResults.FromResult(result, httpContext);
+            }
+        ).RequireScope(AuthScopeNames.UsersSendCredentials);
 
         group.MapPatch(
             "/{userId:guid}/active",
