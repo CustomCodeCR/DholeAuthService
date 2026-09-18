@@ -94,5 +94,7 @@ public static class AuthEndpoints
 
     private sealed record LoginRequest(string Email, string Password);
 
+    private sealed record ChangeOwnPasswordRequest(string Password);
+
     private sealed record RefreshTokenRequest(string RefreshToken);
 }
