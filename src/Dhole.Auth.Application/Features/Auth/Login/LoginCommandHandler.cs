@@ -181,7 +181,8 @@ public sealed class LoginCommandHandler(
                 refreshTokenExpiresAt,
                 user.DisplayName,
                 user.UserName,
-                user.Email
+                user.Email,
+                user.MustChangePassword
             )
         );
     }
