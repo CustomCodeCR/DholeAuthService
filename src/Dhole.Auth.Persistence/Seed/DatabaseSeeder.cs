@@ -31,6 +31,7 @@ public sealed class DatabaseSeeder(
     {
         await SeedRolesAsync(cancellationToken);
         await SeedScopesAsync(cancellationToken);
+        await EnsureAdministratorCredentialScopesAsync(cancellationToken);
         await EnsureSellerVisibilityRoleScopesAsync(cancellationToken);
         await AssignAllScopesToSuperUserAsync(cancellationToken);
         await EnsurePricingWorkspaceScopeAsync(cancellationToken);
@@ -203,6 +204,50 @@ public sealed class DatabaseSeeder(
         await dbContext.SaveChangesAsync(cancellationToken);
 
         foreach (var userId in affectedUserIds)
+        {
+            await permissionCache.RemoveAsync(userId, cancellationToken);
+        }
+    }
+
+    private async Task EnsureAdministratorCredentialScopesAsync(CancellationToken cancellationToken)
+    {
+        var administratorRole = await dbContext.Roles
+            .Include(x => x.Scopes)
+            .FirstOrDefaultAsync(
+                x => x.Name == AuthConstants.SystemRoles.Administrator,
+                cancellationToken
+            );
+
+        if (administratorRole is null)
+        {
+            return;
+        }
+
+        var credentialScopeCodes = new[]
+        {
+            AuthConstants.Scopes.UserChangePassword,
+            AuthConstants.Scopes.UserSendCredentials,
+        };
+
+        var credentialScopeIds = await dbContext.Scopes
+            .Where(x => x.IsActive && credentialScopeCodes.Contains(x.Code))
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        foreach (var scopeId in credentialScopeIds)
+        {
+            administratorRole.AssignScope(scopeId, assignedBy: null);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var userIds = await dbContext.UserRoles
+            .Where(x => x.RoleId == administratorRole.Id)
+            .Select(x => x.UserId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        foreach (var userId in userIds)
         {
             await permissionCache.RemoveAsync(userId, cancellationToken);
         }
