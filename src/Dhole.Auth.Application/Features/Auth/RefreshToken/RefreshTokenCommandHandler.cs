@@ -139,7 +139,8 @@ public sealed class RefreshTokenCommandHandler(
                 refreshTokenExpiresAt,
                 user.DisplayName,
                 user.UserName,
-                user.Email
+                user.Email,
+                user.MustChangePassword
             )
         );
     }
