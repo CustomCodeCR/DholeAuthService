@@ -9,6 +9,7 @@ internal static class AuthScopeCatalog
             .. AuditLogsScopes.All,
             .. PricingScopes.All,
             .. AiScopes.All,
+            .. AgentScopes.All,
             .. StorageScopes.All,
             .. MonitoringScopes.All,
             .. ReportsScopes.All,
