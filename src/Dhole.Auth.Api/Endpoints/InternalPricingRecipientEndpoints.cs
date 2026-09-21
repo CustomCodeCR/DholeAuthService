@@ -30,6 +30,10 @@ public static class InternalPricingRecipientEndpoints
             .WithTags("Internal")
             .AllowAnonymous();
 
+        app.MapGet("/api/internal/auth/pricing-users", GetPricingUsersAsync)
+            .WithTags("Internal")
+            .AllowAnonymous();
+
         return app;
     }
 
@@ -100,6 +104,31 @@ public static class InternalPricingRecipientEndpoints
         );
 
         return Results.Ok(executives);
+    }
+
+    private static async Task<IResult> GetPricingUsersAsync(
+        HttpRequest request,
+        IConfiguration configuration,
+        ServiceDbContext db,
+        CancellationToken cancellationToken)
+    {
+        if (!HasValidServiceKey(request, configuration))
+            return Results.Unauthorized();
+
+        var users = await db.Users
+            .AsNoTracking()
+            .Where(x => !x.IsDeleted)
+            .OrderBy(x => x.DisplayName)
+            .ThenBy(x => x.UserName)
+            .Select(x => new InternalPricingUser(
+                x.Id,
+                x.Email,
+                x.DisplayName,
+                x.UserName
+            ))
+            .ToListAsync(cancellationToken);
+
+        return Results.Ok(users);
     }
 
     private static async Task<IReadOnlyList<InternalPricingUser>> GetActiveUsersWithAnyScopeAsync(
