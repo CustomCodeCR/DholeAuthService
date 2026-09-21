@@ -10,6 +10,7 @@ internal static class AuthScopeNames
     public const string UsersSetLocked = "auth.users.set-locked";
     public const string UsersChangePassword = "auth.users.change-password";
     public const string UsersSendCredentials = "auth.users.send-credentials";
+    public const string UsersImpersonate = "auth.users.impersonate";
     public const string UsersRolesAssign = "auth.users.roles.assign";
     public const string UsersRolesRevoke = "auth.users.roles.revoke";
     public const string UsersScopesAssign = "auth.users.scopes.assign";
