@@ -35,6 +35,36 @@ internal static class AgentScopes
                 "Permite crear, actualizar, activar e inactivar referencias de credenciales para proveedores Agent."
             ),
             ScopeCatalog.Create(
+                "agent.credentials.verify",
+                "Verificar credenciales Agent",
+                "Permite verificar las credenciales configuradas para proveedores de Dhole Agent."
+            ),
+            ScopeCatalog.Create(
+                "agent.routes.manage",
+                "Administrar rutas de extracción Agent",
+                "Permite consultar, crear, actualizar y eliminar las rutas de un perfil de extracción."
+            ),
+            ScopeCatalog.Create(
+                "agent.equipment.manage",
+                "Administrar equipos de extracción Agent",
+                "Permite consultar, crear, actualizar y eliminar los equipos y contenedores de un perfil de extracción."
+            ),
+            ScopeCatalog.Create(
+                "agent.capture-rules.manage",
+                "Administrar reglas de captura Agent",
+                "Permite consultar, crear, actualizar, eliminar y probar las reglas de captura de endpoints de un perfil de extracción."
+            ),
+            ScopeCatalog.Create(
+                "agent.extraction-fields.manage",
+                "Administrar campos de extracción Agent",
+                "Permite consultar, crear, actualizar y eliminar los campos de un perfil de extracción."
+            ),
+            ScopeCatalog.Create(
+                "agent.prompts.manage",
+                "Administrar prompts de extracción Agent",
+                "Permite generar la vista previa del prompt de un perfil de extracción."
+            ),
+            ScopeCatalog.Create(
                 "agent.browser-profiles.view",
                 "Ver perfiles de navegador Agent",
                 "Permite consultar el estado de los perfiles de navegador persistentes."
