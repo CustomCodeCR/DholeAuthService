@@ -19,4 +19,6 @@ public static class AuthAuditActions
     public const string Refreshed = "refreshed";
     public const string Revoked = "revoked";
     public const string RevokedAll = "revoked_all";
+    public const string ImpersonationStarted = "impersonation_started";
+    public const string ImpersonationStopped = "impersonation_stopped";
 }
