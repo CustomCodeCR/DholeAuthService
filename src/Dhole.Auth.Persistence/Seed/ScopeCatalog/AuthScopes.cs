@@ -37,6 +37,11 @@ internal static class AuthScopes
                 "Permite generar una contraseña temporal y enviar las credenciales de acceso a un usuario."
             ),
             ScopeCatalog.Create(
+                "auth.users.impersonate",
+                "Impersonar usuarios",
+                "Permite iniciar una sesión temporal actuando como otro usuario sin conocer su contraseña, conservando la identidad real del operador para auditoría."
+            ),
+            ScopeCatalog.Create(
                 "auth.users.roles.assign",
                 "Asignar roles a usuarios",
                 "Permite asignar roles a usuarios."

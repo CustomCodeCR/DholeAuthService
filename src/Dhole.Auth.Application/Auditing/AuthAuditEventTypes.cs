@@ -29,4 +29,6 @@ public static class AuthAuditEventTypes
     public const string SessionRefreshed = "auth.session.refreshed";
     public const string SessionRevoked = "auth.session.revoked";
     public const string UserSessionsRevoked = "auth.user.sessions.revoked";
+    public const string ImpersonationStarted = "auth.impersonation.started";
+    public const string ImpersonationStopped = "auth.impersonation.stopped";
 }

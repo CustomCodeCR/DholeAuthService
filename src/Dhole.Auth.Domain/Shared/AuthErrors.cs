@@ -153,4 +153,24 @@ public static class AuthErrors
         "Auth.ProtectedSeedUser",
         "El usuario semilla mlang@castrofallas.com no se puede modificar, eliminar, bloquear ni desactivar."
     );
+
+    public static readonly Error CannotImpersonateSelf = new(
+        "Auth.CannotImpersonateSelf",
+        "No es posible impersonar al usuario actualmente autenticado."
+    );
+
+    public static readonly Error CannotImpersonateSuperUser = new(
+        "Auth.CannotImpersonateSuperUser",
+        "Solo un SuperUsuario puede impersonar a otro SuperUsuario."
+    );
+
+    public static readonly Error NestedImpersonationNotAllowed = new(
+        "Auth.NestedImpersonationNotAllowed",
+        "No es posible iniciar una segunda impersonación desde una sesión ya impersonada."
+    );
+
+    public static readonly Error NotImpersonating = new(
+        "Auth.NotImpersonating",
+        "La sesión actual no es una sesión de impersonación."
+    );
 }

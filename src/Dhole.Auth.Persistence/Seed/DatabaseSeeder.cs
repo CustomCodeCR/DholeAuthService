@@ -227,6 +227,7 @@ public sealed class DatabaseSeeder(
         {
             AuthConstants.Scopes.UserChangePassword,
             AuthConstants.Scopes.UserSendCredentials,
+            AuthConstants.Scopes.UserImpersonate,
         };
 
         var credentialScopeIds = await dbContext.Scopes

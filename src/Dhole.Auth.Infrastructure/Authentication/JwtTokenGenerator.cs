@@ -15,7 +15,8 @@ internal sealed class JwtTokenGenerator(ITokenService tokenService) : IJwtTokenG
         IReadOnlyCollection<string> roles,
         IReadOnlyCollection<string> scopes,
         int tokenVersion,
-        DateTime expiresAt
+        DateTime expiresAt,
+        IReadOnlyDictionary<string, string>? extraClaims = null
     )
     {
         return tokenService.CreateToken(
@@ -26,7 +27,7 @@ internal sealed class JwtTokenGenerator(ITokenService tokenService) : IJwtTokenG
                 UserType = userType,
                 Email = email,
                 UserName = userName,
-                ExtraClaims = BuildDisplayNameClaims(displayName),
+                ExtraClaims = BuildClaims(displayName, extraClaims),
                 Roles = roles,
                 Scopes = ExpandCompatibleScopes(scopes),
                 TokenVersion = tokenVersion,
@@ -49,18 +50,38 @@ internal sealed class JwtTokenGenerator(ITokenService tokenService) : IJwtTokenG
         return expanded.ToArray();
     }
 
-    private static Dictionary<string, string> BuildDisplayNameClaims(string displayName)
+    private static Dictionary<string, string> BuildClaims(
+        string displayName,
+        IReadOnlyDictionary<string, string>? extraClaims
+    )
     {
         var normalizedDisplayName = string.IsNullOrWhiteSpace(displayName)
             ? string.Empty
             : displayName.Trim();
 
-        return new Dictionary<string, string>
+        var claims = new Dictionary<string, string>
         {
             ["displayName"] = normalizedDisplayName,
             ["display_name"] = normalizedDisplayName,
             ["fullName"] = normalizedDisplayName,
             ["full_name"] = normalizedDisplayName,
         };
+
+        if (extraClaims is null)
+        {
+            return claims;
+        }
+
+        foreach (var claim in extraClaims)
+        {
+            if (string.IsNullOrWhiteSpace(claim.Key))
+            {
+                continue;
+            }
+
+            claims[claim.Key.Trim()] = claim.Value ?? string.Empty;
+        }
+
+        return claims;
     }
 }

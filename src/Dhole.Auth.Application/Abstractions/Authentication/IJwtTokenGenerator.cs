@@ -12,6 +12,7 @@ public interface IJwtTokenGenerator
         IReadOnlyCollection<string> roles,
         IReadOnlyCollection<string> scopes,
         int tokenVersion,
-        DateTime expiresAt
+        DateTime expiresAt,
+        IReadOnlyDictionary<string, string>? extraClaims = null
     );
 }
