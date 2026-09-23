@@ -32,7 +32,7 @@ internal static class PricingScopes
             ScopeCatalog.Create("pricing.import-fcl-rate.approve", "Preaprobar tarifas FCL importadas", "Permite preaprobar manualmente tarifas FCL que ya pasaron la preautorización automática."),
             ScopeCatalog.Create("pricing.import-fcl-rate.reject", "Rechazar tarifas FCL importadas", "Permite rechazar tarifas FCL recibidas o importadas."),
             ScopeCatalog.Create("pricing.import-fcl-rate.create-as-rate", "Crear tarifa desde importación FCL", "Permite convertir una tarifa FCL importada en una tarifa oficial."),
-            ScopeCatalog.Create("pricing.own-lcl-consolidation.create", "Crear consolidados LCL propios", "Permite crear consolidados LCL propios. Los administradores mantienen acceso y los demás usuarios requieren este scope."),
+            ScopeCatalog.Create("pricing.own-lcl-consolidation.create", "Crear consolidados LCL propios", "Permite ver la opción administrativa de Consolidados propios y crear, renombrar o modificar consolidados LCL propios. El acceso administrativo requiere explícitamente este scope."),
             ScopeCatalog.Create(
                 "pricing.rate-request.create",
                 "Crear solicitudes de tarifa",
