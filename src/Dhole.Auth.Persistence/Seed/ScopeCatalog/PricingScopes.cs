@@ -10,6 +10,11 @@ internal static class PricingScopes
                 "Permite trabajar únicamente dentro del módulo de Pricing."
             ),
             ScopeCatalog.Create(
+                "pricing.manual-ocean-freight.create",
+                "Crear flete marítimo manual",
+                "Permite crear fletes marítimos manuales desde Pantalla 6 sin otorgar permisos de revisión o aprobación de tarifas importadas."
+            ),
+            ScopeCatalog.Create(
                 "pricing.import-fcl-rate.review",
                 "Revisar y aprobar tarifas recibidas",
                 "Permite ver, revisar, comentar, aprobar y rechazar tarifas recibidas por correo o extracción."
