@@ -86,5 +86,12 @@ internal static class PricingScopes
             ScopeCatalog.Create("pricing.fcl-decisions.create", "Crear decisión FCL", "Permite generar recomendación tarifaria FCL."),
             ScopeCatalog.Create("pricing.fcl-decisions.view", "Ver decisiones FCL", "Permite consultar decisiones tarifarias FCL."),
             ScopeCatalog.Create("pricing.fcl-decisions.delete", "Eliminar decisión FCL", "Permite eliminar decisión tarifaria FCL."),
+            ScopeCatalog.Create("pricing.market-benchmark.view", "Ver benchmark de mercado", "Permite consultar el benchmark de mercado asociado a una tarifa."),
+            ScopeCatalog.Create("pricing.market-benchmark.calculate", "Calcular benchmark de mercado", "Permite calcular el benchmark de mercado para una ruta y contexto de cotización."),
+            ScopeCatalog.Create("pricing.auto-pricing.view", "Ver Auto Pricing", "Permite consultar decisiones y resultados de Auto Pricing."),
+            ScopeCatalog.Create("pricing.auto-pricing.calculate", "Calcular Auto Pricing", "Permite calcular y recalcular recomendaciones de Auto Pricing."),
+            ScopeCatalog.Create("pricing.auto-pricing.apply", "Aplicar Auto Pricing", "Permite aplicar el precio sugerido por Auto Pricing a una tarifa."),
+            ScopeCatalog.Create("pricing.auto-pricing.override", "Modificar Auto Pricing", "Permite realizar ajustes manuales sobre una decisión de Auto Pricing."),
+            ScopeCatalog.Create("pricing.auto-pricing.approve", "Aprobar Auto Pricing", "Permite aprobar una decisión de Auto Pricing."),
         ];
 }
