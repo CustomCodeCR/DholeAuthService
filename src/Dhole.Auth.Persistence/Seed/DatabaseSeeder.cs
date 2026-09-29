@@ -330,6 +330,17 @@ public sealed class DatabaseSeeder(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        var superUserIds = await dbContext.UserRoles
+            .Where(x => x.RoleId == superUserRole.Id)
+            .Select(x => x.UserId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        foreach (var userId in superUserIds)
+        {
+            await permissionCache.RemoveAsync(userId, cancellationToken);
+        }
     }
 
     private async Task EnsurePricingWorkspaceScopeAsync(CancellationToken cancellationToken)
