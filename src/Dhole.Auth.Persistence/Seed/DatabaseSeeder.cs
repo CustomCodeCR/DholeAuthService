@@ -230,6 +230,17 @@ public sealed class DatabaseSeeder(
         var activeScopeIds = await dbContext.Scopes.Where(x => x.IsActive).Select(x => x.Id).ToListAsync(cancellationToken);
         foreach (var scopeId in activeScopeIds) superUserRole.AssignScope(scopeId, assignedBy: null);
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        var superUserIds = await dbContext.UserRoles
+            .Where(x => x.RoleId == superUserRole.Id)
+            .Select(x => x.UserId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        foreach (var userId in superUserIds)
+        {
+            await permissionCache.RemoveAsync(userId, cancellationToken);
+        }
     }
 
     private async Task EnsurePricingWorkspaceScopeAsync(CancellationToken cancellationToken)
