@@ -2,10 +2,11 @@
 
 # Base image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
-RUN apt-get update && \
-  apt-get install -y tzdata apt-utils libgdiplus libc6-dev && \
-  ln -s /usr/lib/libgdiplus.so /usr/lib/gdiplus.dll && \
-  rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=noninteractive
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && \
+    apt-get install -y --no-install-recommends tzdata
 
 WORKDIR /app
 EXPOSE 8080
@@ -27,6 +28,7 @@ COPY ["src/Dhole.Auth.Infrastructure/Dhole.Auth.Infrastructure.csproj", "src/Dho
 COPY ["src/Dhole.Auth.Contracts/Dhole.Auth.Contracts.csproj", "src/Dhole.Auth.Contracts/"]
 
 RUN --mount=type=secret,id=github_token,required=true \
+  --mount=type=cache,target=/root/.nuget/packages,sharing=locked \
   export NuGetPackageSourceCredentials_github="Username=${GITHUB_ACTOR};Password=$(cat /run/secrets/github_token);ValidAuthenticationTypes=Basic" && \
   dotnet restore "src/Dhole.Auth.Api/Dhole.Auth.Api.csproj" --configfile /src/NuGet.Config
 
