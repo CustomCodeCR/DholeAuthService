@@ -34,14 +34,16 @@ RUN --mount=type=secret,id=github_token,required=true \
 COPY . .
 
 WORKDIR "/src/src/Dhole.Auth.Workers"
-RUN dotnet build "Dhole.Auth.Workers.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
+RUN --mount=type=cache,target=/root/.nuget/packages,sharing=locked \
+  dotnet build "Dhole.Auth.Workers.csproj" -c $BUILD_CONFIGURATION -o /app/build --no-restore
 
 # Publish image
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src/src/Dhole.Auth.Workers
 
-RUN dotnet publish "Dhole.Auth.Workers.csproj" \
+RUN --mount=type=cache,target=/root/.nuget/packages,sharing=locked \
+  dotnet publish "Dhole.Auth.Workers.csproj" \
   -c $BUILD_CONFIGURATION \
   -o /app/publish \
   --no-restore \
