@@ -19,8 +19,6 @@ public sealed class DatabaseSeeder(
 )
 {
     private const string PricingWorkspaceScope = "pricing.workspace.access";
-    private const string PricingCostViewScope = "pricing.cost.view";
-    private const string PricingCostSelectScope = "pricing.cost.select";
     private const string RateRequestCreateScope = "pricing.rate-request.create";
     private const string RateRequestViewSelectedScope = "pricing.rate-request.view-selected";
     private const string RateRequestViewAllScope = "pricing.rate-request.view-all";
@@ -259,33 +257,22 @@ public sealed class DatabaseSeeder(
             return;
         }
 
-        var requiredScopeCodes = new[]
-        {
-            PricingWorkspaceScope,
-            PricingCostViewScope,
-            PricingCostSelectScope,
-        };
+        var workspaceScopeId = await dbContext.Scopes
+            .Where(x => x.IsActive && x.Code == PricingWorkspaceScope)
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        var requiredScopeIds = await dbContext.Scopes
-            .Where(x => x.IsActive && requiredScopeCodes.Contains(x.Code))
-            .Select(x => x.Id)
-            .ToListAsync(cancellationToken);
-
-        if (requiredScopeIds.Count == 0)
+        if (workspaceScopeId is null)
         {
             return;
         }
 
-        foreach (var scopeId in requiredScopeIds)
-        {
-            pricingRole.AssignScope(scopeId, assignedBy: null);
-        }
-
+        pricingRole.AssignScope(workspaceScopeId.Value, assignedBy: null);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        // Los tarifarios LTL usan los endpoints compartidos de ftl-tariffs, protegidos
-        // por permisos de lectura/selección de costos. Pricing puede consultar y usar
-        // LTL en el wizard sin recibir permisos de crear, editar o eliminar costos.
+        // Los permisos adicionales de Pricing se asignan explícitamente por scope.
+        // LTL/FTL puede consumir sus tarifarios desde el workspace sin convertir
+        // pricing.cost.view/select en permisos implícitos del rol Pricing.
         var pricingUserIds = await dbContext
             .UserRoles.Where(x => x.RoleId == pricingRole.Id)
             .Select(x => x.UserId)
