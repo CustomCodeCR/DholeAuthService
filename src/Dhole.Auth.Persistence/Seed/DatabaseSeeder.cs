@@ -19,6 +19,8 @@ public sealed class DatabaseSeeder(
 )
 {
     private const string PricingWorkspaceScope = "pricing.workspace.access";
+    private const string PricingCostViewScope = "pricing.cost.view";
+    private const string PricingCostSelectScope = "pricing.cost.select";
     private const string RateRequestCreateScope = "pricing.rate-request.create";
     private const string RateRequestViewSelectedScope = "pricing.rate-request.view-selected";
     private const string RateRequestViewAllScope = "pricing.rate-request.view-all";
@@ -357,21 +359,33 @@ public sealed class DatabaseSeeder(
             return;
         }
 
-        var workspaceScopeId = await dbContext
-            .Scopes.Where(x => x.IsActive && x.Code == PricingWorkspaceScope)
-            .Select(x => (Guid?)x.Id)
-            .FirstOrDefaultAsync(cancellationToken);
+        var requiredScopeCodes = new[]
+        {
+            PricingWorkspaceScope,
+            PricingCostViewScope,
+            PricingCostSelectScope,
+        };
 
-        if (workspaceScopeId is null)
+        var requiredScopeIds = await dbContext.Scopes
+            .Where(x => x.IsActive && requiredScopeCodes.Contains(x.Code))
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        if (requiredScopeIds.Count == 0)
         {
             return;
         }
 
-        pricingRole.AssignScope(workspaceScopeId.Value, assignedBy: null);
+        foreach (var scopeId in requiredScopeIds)
+        {
+            pricingRole.AssignScope(scopeId, assignedBy: null);
+        }
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        // Permissions beyond the base workspace are intentionally NOT assigned here.
-        // Inbox, import review, logistics news, rates, costs and terms remain scope-gated.
+        // Los tarifarios LTL usan los endpoints compartidos de ftl-tariffs, protegidos
+        // por permisos de lectura/selección de costos. Pricing puede consultar y usar
+        // LTL en el wizard sin recibir permisos de crear, editar o eliminar costos.
         var pricingUserIds = await dbContext
             .UserRoles.Where(x => x.RoleId == pricingRole.Id)
             .Select(x => x.UserId)
