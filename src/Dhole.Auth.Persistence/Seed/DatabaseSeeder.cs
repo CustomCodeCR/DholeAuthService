@@ -19,6 +19,13 @@ public sealed class DatabaseSeeder(
 )
 {
     private const string PricingWorkspaceScope = "pricing.workspace.access";
+    private static readonly string[] PricingAverageScopes =
+    [
+        "pricing.market-benchmark.view",
+        "pricing.market-benchmark.calculate",
+        "pricing.auto-pricing.view",
+        "pricing.auto-pricing.calculate",
+    ];
     private const string RateRequestCreateScope = "pricing.rate-request.create";
     private const string RateRequestViewSelectedScope = "pricing.rate-request.view-selected";
     private const string RateRequestViewAllScope = "pricing.rate-request.view-all";
@@ -357,22 +364,29 @@ public sealed class DatabaseSeeder(
             return;
         }
 
-        var workspaceScopeId = await dbContext.Scopes
-            .Where(x => x.IsActive && x.Code == PricingWorkspaceScope)
-            .Select(x => (Guid?)x.Id)
-            .FirstOrDefaultAsync(cancellationToken);
+        // Every member of the Pricing role may inspect and calculate market
+        // suggestions. Applying, overriding and approving sales remain separately gated.
+        var grantedCodes = PricingAverageScopes.Append(PricingWorkspaceScope).ToArray();
+        var grantedScopeIds = await dbContext.Scopes
+            .Where(x => x.IsActive && grantedCodes.Contains(x.Code))
+            .Select(x => new { x.Code, x.Id })
+            .ToListAsync(cancellationToken);
 
-        if (workspaceScopeId is null)
+        if (grantedScopeIds.Count != grantedCodes.Length)
         {
-            return;
+            throw new InvalidOperationException(
+                "No se pudieron encontrar los scopes activos de Average para el rol Pricing.");
         }
 
-        pricingRole.AssignScope(workspaceScopeId.Value, assignedBy: null);
+        foreach (var scope in grantedScopeIds)
+        {
+            pricingRole.AssignScope(scope.Id, assignedBy: null);
+        }
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        // Los permisos adicionales de Pricing se asignan explícitamente por scope.
-        // LTL/FTL puede consumir sus tarifarios desde el workspace sin convertir
-        // pricing.cost.view/select en permisos implícitos del rol Pricing.
+        // Only the four Average read/calculate permissions are base permissions.
+        // Cost, tariff mutation, margin approval, and Auto Pricing apply/override/approve
+        // continue to require their own explicitly assigned scopes.
         var pricingUserIds = await dbContext
             .UserRoles.Where(x => x.RoleId == pricingRole.Id)
             .Select(x => x.UserId)
