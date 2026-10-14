@@ -26,7 +26,7 @@ public static class InternalCrmUserEndpoints
                 .Select(u => new { id = u.Id, active = true }).FirstOrDefaultAsync(ct);
             if (user is null) return Results.NotFound();
             var permissionSet = await permissions.GetAsync(userId, ct);
-            return Results.Ok(new { user.Id, user.active, scopes = permissionSet.EffectiveScopes });
+            return Results.Ok(new { user.id, user.active, scopes = permissionSet.EffectiveScopes });
         }).AllowAnonymous().WithTags("Internal");
         return app;
     }
