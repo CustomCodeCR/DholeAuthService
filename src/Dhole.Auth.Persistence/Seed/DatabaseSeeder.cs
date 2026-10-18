@@ -19,6 +19,11 @@ public sealed class DatabaseSeeder(
 )
 {
     private const string PricingWorkspaceScope = "pricing.workspace.access";
+    private const string CompetitorAnalysisScope = "pricing.competitor-analysis.manage";
+    // Storage API uses its own file permissions. Grant only upload and content download
+    // to Pricing; the analysis-specific scope still gates the UI and Pricing endpoints.
+    private const string StorageFilesCreateScope = "storage.files.create";
+    private const string StorageFilesDownloadScope = "storage.files.download";
     private static readonly string[] PricingAverageScopes =
     [
         "pricing.market-benchmark.view",
@@ -366,7 +371,9 @@ public sealed class DatabaseSeeder(
 
         // Every member of the Pricing role may inspect and calculate market
         // suggestions. Applying, overriding and approving sales remain separately gated.
-        var grantedCodes = PricingAverageScopes.Append(PricingWorkspaceScope).ToArray();
+        var grantedCodes = PricingAverageScopes
+            .Concat([PricingWorkspaceScope, CompetitorAnalysisScope, StorageFilesCreateScope, StorageFilesDownloadScope])
+            .ToArray();
         var grantedScopeIds = await dbContext.Scopes
             .Where(x => x.IsActive && grantedCodes.Contains(x.Code))
             .Select(x => new { x.Code, x.Id })
@@ -375,7 +382,7 @@ public sealed class DatabaseSeeder(
         if (grantedScopeIds.Count != grantedCodes.Length)
         {
             throw new InvalidOperationException(
-                "No se pudieron encontrar los scopes activos de Average para el rol Pricing.");
+                "Faltan scopes requeridos para el rol Pricing (Average, análisis de competencia o Storage).");
         }
 
         foreach (var scope in grantedScopeIds)
