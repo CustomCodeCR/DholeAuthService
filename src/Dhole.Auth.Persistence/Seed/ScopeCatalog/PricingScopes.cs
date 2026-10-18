@@ -5,6 +5,11 @@ internal static class PricingScopes
     public static IReadOnlyCollection<ScopeSeedDefinition> All =>
         [
             ScopeCatalog.Create(
+                "pricing.competitor-analysis.manage",
+                "Administrar análisis de la competencia",
+                "Permite abrir, registrar y visualizar reportes HTML de análisis de competencia almacenados en Storage."
+            ),
+            ScopeCatalog.Create(
                 "pricing.workspace.access",
                 "Acceder a Pricing",
                 "Permite trabajar únicamente dentro del módulo de Pricing."
