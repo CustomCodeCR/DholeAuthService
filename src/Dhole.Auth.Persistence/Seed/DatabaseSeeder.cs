@@ -43,6 +43,7 @@ public sealed class DatabaseSeeder(
     {
         await SeedRolesAsync(cancellationToken);
         await SeedScopesAsync(cancellationToken);
+        await EnsureDynamicsAdministrationRolesAsync(cancellationToken);
         await EnsureAdministratorCredentialScopesAsync(cancellationToken);
         await EnsureSellerVisibilityRoleScopesAsync(cancellationToken);
         await AssignAllScopesToSuperUserAsync(cancellationToken);
@@ -219,6 +220,60 @@ public sealed class DatabaseSeeder(
         {
             await permissionCache.RemoveAsync(userId, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Create narrowly scoped Dynamics roles. Role membership is NEVER automatic;
+    /// administrators may assign these roles through DholeAuth.
+    /// The standard SuperUsuario seed independently receives all active scopes.
+    /// </summary>
+    private async Task EnsureDynamicsAdministrationRolesAsync(CancellationToken cancellationToken)
+    {
+        var rules = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            [DynamicsScopes.AdministratorRole] = [DynamicsScopes.Admin],
+            [DynamicsScopes.SecurityAdministratorRole] = [DynamicsScopes.Admin, DynamicsScopes.SecurityAdmin],
+        };
+
+        var scopeIds = await dbContext.Scopes
+            .Where(x => x.IsActive && (x.Code == DynamicsScopes.Admin || x.Code == DynamicsScopes.SecurityAdmin))
+            .ToDictionaryAsync(x => x.Code, x => x.Id, cancellationToken);
+
+        if (!scopeIds.ContainsKey(DynamicsScopes.Admin) || !scopeIds.ContainsKey(DynamicsScopes.SecurityAdmin))
+            throw new InvalidOperationException("Dynamics scopes must exist and be active before role assignment.");
+
+        foreach (var rule in rules)
+        {
+            var role = await dbContext.Roles
+                .Include(x => x.Scopes)
+                .FirstOrDefaultAsync(x => x.Name == rule.Key, cancellationToken);
+
+            if (role is null)
+            {
+                role = Role.Create(
+                    rule.Key,
+                    rule.Key == DynamicsScopes.AdministratorRole
+                        ? "Acceso administrativo a conexiones de Microsoft Dataverse."
+                        : "Acceso privilegiado a clientes y autorizaciones del conector Dynamics.",
+                    isSystemRole: true,
+                    createdBy: null
+                );
+                await dbContext.Roles.AddAsync(role, cancellationToken);
+            }
+
+            foreach (var code in rule.Value)
+                role.AssignScope(scopeIds[code], assignedBy: null);
+
+            var assignedUserIds = await dbContext.UserRoles
+                .Where(x => x.RoleId == role.Id)
+                .Select(x => x.UserId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+            foreach (var id in assignedUserIds)
+                await permissionCache.RemoveAsync(id, cancellationToken);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private async Task EnsureAdministratorCredentialScopesAsync(CancellationToken cancellationToken)
