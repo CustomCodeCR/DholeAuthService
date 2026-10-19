@@ -1,8 +1,7 @@
 name: Deploy Dhole Auth - Production
 
 on:
-  push:
-    branches: [master]
+  # Any change to authorization scopes requires an explicitly approved deployment.
   workflow_dispatch:
 
 permissions:
