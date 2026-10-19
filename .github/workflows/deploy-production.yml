@@ -23,7 +23,7 @@ env:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master' && github.event.head_commit.message == 'deploy(auth): release Dynamics scopes once on production')
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master' && github.event.head_commit.message == 'dynamics-scopes-production-once')
     runs-on: [self-hosted, linux, x64, dhole]
     steps:
       - name: Checkout service
