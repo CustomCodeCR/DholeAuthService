@@ -1,11 +1,14 @@
 name: Deploy Dhole Auth - Production
 
 on:
-  # Any change to authorization scopes requires an explicitly approved deployment.
+  # One-time release requested for Dynamics scopes; afterwards restore manual trigger.
+  push:
+    branches: [master]
+    paths: ['.github/workflows/deploy-production.yml']
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   packages: read
 
 concurrency:
@@ -20,6 +23,7 @@ env:
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/master' && github.event.head_commit.message == 'deploy(auth): release Dynamics scopes once on production')
     runs-on: [self-hosted, linux, x64, dhole]
     steps:
       - name: Checkout service
@@ -83,14 +87,5 @@ jobs:
           docker logs --tail 250 "$CONTAINER_ID" || true
           exit 1
 
-      - name: Keep only master and develop branches
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*'
-          while IFS= read -r branch; do
-            case "$branch" in master|develop) continue ;; esac
-            git push origin --delete "$branch"
-          done < <(git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin | grep -v '^HEAD$' || true)
       - name: Cleanup old images
         run: docker image prune -f
