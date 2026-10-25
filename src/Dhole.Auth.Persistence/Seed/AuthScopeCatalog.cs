@@ -19,5 +19,6 @@ internal static class AuthScopeCatalog
             .. CrmCommercialScopes.All,
             .. CrmQuoteScopes.All,
             .. CrmFollowupScopes.All,
+            .. CrmFinanceScopes.All,
         ];
 }
