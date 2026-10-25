@@ -23,10 +23,10 @@ public static class InternalCrmUserEndpoints
             if (a.Length != b.Length || !CryptographicOperations.FixedTimeEquals(a, b)) return Results.Unauthorized();
             var user = await db.Users.AsNoTracking()
                 .Where(u => u.Id == userId && u.IsActive && !u.IsLocked && !u.IsDeleted)
-                .Select(u => new { id = u.Id, active = true }).FirstOrDefaultAsync(ct);
+                .Select(u => new { id = u.Id, active = true, email = u.Email, displayName = u.DisplayName }).FirstOrDefaultAsync(ct);
             if (user is null) return Results.NotFound();
             var permissionSet = await permissions.GetAsync(userId, ct);
-            return Results.Ok(new { user.id, user.active, scopes = permissionSet.EffectiveScopes });
+            return Results.Ok(new { user.id, user.active, user.email, user.displayName, scopes = permissionSet.EffectiveScopes });
         }).AllowAnonymous().WithTags("Internal");
         return app;
     }
