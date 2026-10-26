@@ -1,6 +1,8 @@
 name: Deploy Dhole Auth - Production
 
 on:
+  push:
+    branches: [master]
   workflow_dispatch:
 
 permissions:
