@@ -85,6 +85,7 @@ app.MapRoleEndpoints();
 app.MapScopeEndpoints();
 app.MapSessionEndpoints();
 app.MapInternalPricingRecipientEndpoints();
+app.MapInternalCrmUserEndpoints();
 app.MapDatabaseMaintenanceEndpoints();
 app.MapEnvironmentRecoveryEndpoints();
 
