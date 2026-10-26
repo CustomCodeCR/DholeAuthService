@@ -294,7 +294,7 @@ public sealed class DatabaseSeeder(
             .FirstOrDefaultAsync(x => x.Name == AuthConstants.SystemRoles.SuperUser, cancellationToken);
         if (superUserRole is null) return;
 
-        var activeScopeIds = await dbContext.Scopes.Where(x => x.IsActive).Select(x => x.Id).ToListAsync(cancellationToken);
+        var activeScopeIds = await dbContext.Scopes.Where(x => x.IsActive && !x.Code.StartsWith("crm.")).Select(x => x.Id).ToListAsync(cancellationToken);
         foreach (var scopeId in activeScopeIds) superUserRole.AssignScope(scopeId, assignedBy: null);
         await dbContext.SaveChangesAsync(cancellationToken);
 
