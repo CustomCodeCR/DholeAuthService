@@ -16,5 +16,7 @@ internal static class AuthScopeCatalog
             .. NotificationsScopes.All,
             .. ContentScopes.All,
             .. DynamicsScopes.All,
+            .. CrmScopes.All,
+            .. SrmScopes.All,
         ];
 }
