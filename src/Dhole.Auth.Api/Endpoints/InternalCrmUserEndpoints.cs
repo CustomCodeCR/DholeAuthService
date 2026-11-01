@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Persistence.DbContexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +23,7 @@ public static class InternalCrmUserEndpoints
 
     private static async Task<IResult> GetCrmUserAsync(
         Guid userId, HttpRequest request, IConfiguration configuration,
-        ServiceDbContext db, CancellationToken ct)
+        ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct)
     {
         if (!Authorized(request, configuration))
             return Results.Unauthorized();
@@ -33,20 +34,14 @@ public static class InternalCrmUserEndpoints
             .SingleOrDefaultAsync(ct);
         if (user is null) return Results.NotFound();
 
-        var directScopeIds = db.UserScopes.AsNoTracking()
-            .Where(x => x.UserId == userId).Select(x => x.ScopeId);
-
-        var roleScopeIds =
-            from ur in db.UserRoles.AsNoTracking()
-            join role in db.Roles.AsNoTracking() on ur.RoleId equals role.Id
-            join rs in db.RoleScopes.AsNoTracking() on role.Id equals rs.RoleId
-            where ur.UserId == userId && role.IsActive && !role.IsDeleted
-            select rs.ScopeId;
-
-        var effectiveIds = directScopeIds.Union(roleScopeIds);
-        var scopes = await db.Scopes.AsNoTracking()
-            .Where(scope => scope.IsActive && effectiveIds.Contains(scope.Id))
-            .Select(scope => scope.Code).Distinct().OrderBy(code => code).ToArrayAsync(ct);
+        // Reuse the same effective-permission policy as JWT and the Auth UI:
+        // an active SuperUsuario receives ALL active scopes, even if a role-scope
+        // association has not yet been materialized. Auth remains the authority.
+        var effective = await permissions.GetAsync(userId, ct);
+        var scopes = effective.EffectiveScopes
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
         return Results.Ok(new {
             id = user.Id,
