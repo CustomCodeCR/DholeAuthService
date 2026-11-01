@@ -29,6 +29,10 @@ internal static class CrmScopes
         ScopeCatalog.Create("crm.analysis.read", "CRM · Analítica · Consultar", "Permiso específico de CRM: crm.analysis.read."),
         ScopeCatalog.Create("crm.analysis.manage", "CRM · Analítica · Administrar", "Permiso específico de CRM: crm.analysis.manage."),
         ScopeCatalog.Create("crm.credit.read", "CRM · Crédito · Consultar", "Permiso específico de CRM: crm.credit.read."),
+        ScopeCatalog.Create("crm.credit.manage", "CRM · Crédito · Gestionar condiciones y coberturas", "Permite gestionar las condiciones y coberturas del crédito en las cuentas autorizadas; no autoriza aprobarlo."),
+        ScopeCatalog.Create("crm.credit.approve", "CRM · Crédito · Aprobar o rechazar", "Permite aprobar y rechazar propuestas de crédito en cuentas autorizadas."),
+        ScopeCatalog.Create("crm.contract.manage", "CRM · Contratos · Gestionar", "Permite gestionar contratos de crédito en las cuentas autorizadas."),
+
         ScopeCatalog.Create("crm.contract.read", "CRM · Contratos · Consultar", "Permiso específico de CRM: crm.contract.read."),
         ScopeCatalog.Create("crm.settings.manage", "CRM · Configuración · Administrar", "Permiso específico de CRM: crm.settings.manage."),
     ];
