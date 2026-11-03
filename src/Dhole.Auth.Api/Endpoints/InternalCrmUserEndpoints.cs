@@ -18,6 +18,9 @@ public static class InternalCrmUserEndpoints
         app.MapGet("/api/internal/auth/crm-users/{userId:guid}", GetCrmUserAsync)
             .WithTags("Internal")
             .AllowAnonymous();
+        app.MapGet("/api/internal/auth/crm-users/by-username/{username}", GetCrmUserByUsernameAsync)
+            .WithTags("Internal")
+            .AllowAnonymous();
         return app;
     }
 
@@ -50,6 +53,29 @@ public static class InternalCrmUserEndpoints
             email = user.Email,
             displayName = user.DisplayName
         });
+    }
+
+
+    // Internal-only identity resolution for CRM commitment escalations.
+    // Deliberately uses the same service-key authentication and active-user check.
+    private static async Task<IResult> GetCrmUserByUsernameAsync(
+        string username, HttpRequest request, IConfiguration configuration,
+        ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct)
+    {
+        if (!Authorized(request, configuration))
+            return Results.Unauthorized();
+        if (string.IsNullOrWhiteSpace(username) || username.Length > 80)
+            return Results.NotFound();
+
+        var normalized = username.Trim().ToLowerInvariant();
+        var userId = await db.Users.AsNoTracking()
+            .Where(u => u.UserName.ToLower() == normalized &&
+                !u.IsDeleted && u.IsActive && !u.IsLocked)
+            .Select(u => (Guid?)u.Id)
+            .SingleOrDefaultAsync(ct);
+        return userId.HasValue
+            ? await GetCrmUserAsync(userId.Value, request, configuration, db, permissions, ct)
+            : Results.NotFound();
     }
 
     private static bool Authorized(HttpRequest req, IConfiguration configuration)
