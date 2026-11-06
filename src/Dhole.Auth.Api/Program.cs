@@ -49,6 +49,14 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+// Expose the deployed assembly version to the Gateway health monitor.
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.Value?.StartsWith("/health", StringComparison.OrdinalIgnoreCase) == true)
+        context.Response.Headers["X-Dhole-Version"] = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "unknown";
+    await next();
+});
+
 app.UseCustomCodeApi();
 
 app.UseCors(CorsPolicyName);
