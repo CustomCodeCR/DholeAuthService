@@ -65,13 +65,22 @@ public sealed class ServiceDbContext(
         if (!AuthRealtimeInvalidation.IsEnabled(realtimeConfiguration))
             return;
         ChangeTracker.DetectChanges();
-        // User business events identify meaningful security/permission mutations.
-        // Login heartbeat changes are deliberately excluded.
-        var users = ChangeTracker.Entries<User>()
-            .Where(x => x.State is EntityState.Added or EntityState.Modified &&
+        // Includes role/scope assignment and revocation even when the User
+        // aggregate is not tracked by the command handler. No login heartbeat.
+        var affected = ChangeTracker.Entries<User>()
+            .Where(x => x.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
                         x.Entity.DomainEvents.Count > 0)
-            .Select(x => x.Entity).ToArray();
-        foreach (var user in users)
+            .Select(x => x.Entity.Id)
+            .Concat(ChangeTracker.Entries<UserRole>()
+                .Where(x => x.State is EntityState.Added or EntityState.Deleted)
+                .Select(x => x.Entity.UserId))
+            .Concat(ChangeTracker.Entries<UserScope>()
+                .Where(x => x.State is EntityState.Added or EntityState.Deleted)
+                .Select(x => x.Entity.UserId))
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .ToArray();
+        foreach (var userId in affected)
         {
             var eventId = Guid.NewGuid();
             var timestamp = DateTimeOffset.UtcNow;
@@ -83,8 +92,11 @@ public sealed class ServiceDbContext(
                 EventType = AuthRealtimeInvalidation.Type,
                 EventName = AuthRealtimeInvalidation.Type,
                 SourceService = SourceService,
+                // The historical serializer adds one; never read auth secrets.
                 PayloadJson = AuthRealtimeInvalidation.Serialize(
-                    eventId, user.Id, user.TokenVersion, correlationId, timestamp),
+                    eventId, userId,
+                    AuthRealtimeInvalidation.NextVersionHint() - 1,
+                    correlationId, timestamp),
                 CorrelationId = correlationId,
                 Status = OutboxMessageStatus.Pending,
                 RetryCount = 0,
