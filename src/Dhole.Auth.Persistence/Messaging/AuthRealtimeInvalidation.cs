@@ -19,6 +19,23 @@ public static class AuthRealtimeInvalidation
         config.GetValue<bool>("Realtime:BatchApproved") &&
         string.Equals(config["Realtime:ReleaseId"], ReleaseId, StringComparison.Ordinal);
 
+    private static long _lastMicrosecond;
+    /// <summary>
+    /// Local ordering hint only. Multiple replicas may interleave; clients
+    /// must always reconcile the resource through authenticated REST.
+    /// </summary>
+    public static long NextVersionHint()
+    {
+        while (true)
+        {
+            var now = (DateTimeOffset.UtcNow.Ticks - DateTimeOffset.UnixEpoch.Ticks) / 10;
+            var prior = Volatile.Read(ref _lastMicrosecond);
+            var next = Math.Max(now, prior + 1);
+            if (Interlocked.CompareExchange(ref _lastMicrosecond, next, prior) == prior)
+                return next;
+        }
+    }
+
     public static string Serialize(Guid eventId, Guid userId, long tokenVersion,
         string correlationId, DateTimeOffset utc)
     {
