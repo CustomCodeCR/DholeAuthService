@@ -1,0 +1,40 @@
+name: Realtime F6.04 Auth scoped user events (isolated)
+on:
+  push:
+    branches: [feature/dhole-realtime-universal-rt-20261107-01]
+    paths:
+      - 'src/Dhole.Auth.Persistence/DbContexts/ServiceDbContext.cs'
+      - 'src/Dhole.Auth.Persistence/Messaging/AuthRealtimeInvalidation.cs'
+      - 'src/Dhole.Auth.Workers/Outbox/OutboxProcessor.cs'
+      - 'tests/Dhole.Auth.IntegrationTests/F6AuthRealtimeContractTests.cs'
+      - 'version.json'
+      - 'Directory.Build.targets'
+      - 'CHANGELOG.md'
+      - '.github/workflows/realtime-f6-auth.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: read
+jobs:
+  auth-f6:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Validate Auth SemVer and changelog
+        run: python3 scripts/verify_dhole_version.py
+      - name: Authenticate GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet nuget update source github --username github-actions --password "$GITHUB_TOKEN" --store-password-in-clear-text --configfile NuGet.Config
+      - name: Restore production graph and integration tests
+        run: dotnet restore tests/Dhole.Auth.IntegrationTests/Dhole.Auth.IntegrationTests.csproj --configfile NuGet.Config
+      - name: Build Auth API and safe realtime producer
+        run: dotnet build tests/Dhole.Auth.IntegrationTests/Dhole.Auth.IntegrationTests.csproj -c Release --no-restore
+      - name: Build Auth worker and Outbox stream routing
+        run: dotnet build src/Dhole.Auth.Workers/Dhole.Auth.Workers.csproj -c Release
+      - name: Verify no Auth credential fields in realtime event
+        run: dotnet test tests/Dhole.Auth.IntegrationTests/Dhole.Auth.IntegrationTests.csproj -c Release --no-build --filter FullyQualifiedName~F6AuthRealtimeContractTests -- RunConfiguration.TreatNoTestsAsError=true
