@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.1] - 2026-11-08 (candidato F9, sin publicación)
+
+- Sincroniza metadatos de versión global del batch Dhole Realtime `rt-20261107-01` a `1.13.10`; actualización PATCH independiente de DholeAuthService `1.3.0` → `1.3.1`. No cambia contratos REST, datos, lógica de negocio ni flags; requiere gates F0–F8 y CI de SHA final antes de merge.
+
+
 ## [1.3.0] - 2026-11-08 (F6.04 candidato; sin publicar)
 
 - Auth agrega invalidaciones mínimas y sin credenciales a su Outbox transaccional cuando cambian usuario, permisos o seguridad; no transmite nombres, emails, contraseñas, roles ni claims.
