@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.0] - 2026-11-09 (NotificationsHub universal realtime pilot; candidate)
+
+- MINOR: Preserve existing producer contract and Outbox/REST integration for the NotificationsHub-based pilot.
+- Ecosystem candidate 1.14.0 / 16 Dhole repositories; CustomCodeFramework excluded. Release `rt-20261107-01`, isolated branch `feature/rt-notificationshub-20261109-01`.
+- Staging compile, deployment and post-deploy security audit pending; `develop`, `master` and production not changed by this candidate.
+
 ## [1.3.6] - 2026-11-08 (Dhole realtime coordinated hardening)
 
 - PATCH 1.13.15 ecosystem release alignment with F2/F6 AOF read-only checks and F10 branch-preservation fix. Service candidate unchanged; realtime flags OFF and gates F6–F10 not formally approved.
