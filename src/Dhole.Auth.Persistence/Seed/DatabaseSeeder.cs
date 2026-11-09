@@ -36,7 +36,6 @@ public sealed class DatabaseSeeder(
     private const string RateRequestViewAllScope = "pricing.rate-request.view-all";
     private const string SellerSupervisorRole = "Vendedor Supervisor";
     private const string SellerChiefRole = "Vendedor Jefe";
-    private const string CmsScopePrefix = "cms.";
 
     private readonly SuperAdminSeedOptions _superAdmin = superAdminOptions.Value;
 
@@ -46,7 +45,6 @@ public sealed class DatabaseSeeder(
         await SeedScopesAsync(cancellationToken);
         await EnsureDynamicsAdministrationRolesAsync(cancellationToken);
         await EnsureAdministratorCredentialScopesAsync(cancellationToken);
-        await EnsureMarketingRoleScopesAsync(cancellationToken);
         await EnsureSellerVisibilityRoleScopesAsync(cancellationToken);
         await AssignAllScopesToSuperUserAsync(cancellationToken);
         await EnsurePricingWorkspaceScopeAsync(cancellationToken);
@@ -83,6 +81,32 @@ public sealed class DatabaseSeeder(
         if (!await dbContext.Roles.AnyAsync(x => x.Name == SellerChiefRole, cancellationToken))
         {
             await dbContext.Roles.AddAsync(Role.Create(SellerChiefRole, "Vendedor jefe con visibilidad de las solicitudes y tarifas de todos los vendedores.", true, null), cancellationToken);
+        }
+
+        if (!await dbContext.Roles.AnyAsync(x => x.Name == SellerSupervisorRole, cancellationToken))
+        {
+            await dbContext.Roles.AddAsync(
+                Role.Create(
+                    SellerSupervisorRole,
+                    "Vendedor que puede consultar sus solicitudes y tarifas, más las de vendedores que le sean asignados explícitamente.",
+                    isSystemRole: true,
+                    createdBy: null
+                ),
+                cancellationToken
+            );
+        }
+
+        if (!await dbContext.Roles.AnyAsync(x => x.Name == SellerChiefRole, cancellationToken))
+        {
+            await dbContext.Roles.AddAsync(
+                Role.Create(
+                    SellerChiefRole,
+                    "Vendedor jefe con visibilidad de las solicitudes y tarifas de todos los vendedores.",
+                    isSystemRole: true,
+                    createdBy: null
+                ),
+                cancellationToken
+            );
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -143,6 +167,151 @@ public sealed class DatabaseSeeder(
     /// The standard SuperUsuario seed independently receives all active scopes.
     /// </summary>
     private async Task EnsureDynamicsAdministrationRolesAsync(CancellationToken cancellationToken)
+    {
+        var rules = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            [DynamicsScopes.AdministratorRole] = [DynamicsScopes.Admin],
+            [DynamicsScopes.SecurityAdministratorRole] = [DynamicsScopes.Admin, DynamicsScopes.SecurityAdmin],
+        };
+
+        var scopeIds = await dbContext.Scopes
+            .Where(x => x.IsActive && (x.Code == DynamicsScopes.Admin || x.Code == DynamicsScopes.SecurityAdmin))
+            .ToDictionaryAsync(x => x.Code, x => x.Id, cancellationToken);
+
+        if (!scopeIds.ContainsKey(DynamicsScopes.Admin) || !scopeIds.ContainsKey(DynamicsScopes.SecurityAdmin))
+            throw new InvalidOperationException("Dynamics scopes must exist and be active before role assignment.");
+
+        foreach (var rule in rules)
+        {
+            var role = await dbContext.Roles
+                .Include(x => x.Scopes)
+                .FirstOrDefaultAsync(x => x.Name == rule.Key, cancellationToken);
+
+            if (role is null)
+            {
+                role = Role.Create(
+                    rule.Key,
+                    rule.Key == DynamicsScopes.AdministratorRole
+                        ? "Acceso administrativo a conexiones de Microsoft Dataverse."
+                        : "Acceso privilegiado a clientes y autorizaciones del conector Dynamics.",
+                    isSystemRole: true,
+                    createdBy: null
+                );
+                await dbContext.Roles.AddAsync(role, cancellationToken);
+            }
+
+            foreach (var code in rule.Value)
+                role.AssignScope(scopeIds[code], assignedBy: null);
+
+            var assignedUserIds = await dbContext.UserRoles
+                .Where(x => x.RoleId == role.Id)
+                .Select(x => x.UserId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+            foreach (var id in assignedUserIds)
+                await permissionCache.RemoveAsync(id, cancellationToken);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task EnsureAdministratorCredentialScopesAsync(CancellationToken cancellationToken)
+    {
+        var administratorRole = await dbContext.Roles
+            .Include(x => x.Scopes)
+            .FirstOrDefaultAsync(
+                x => x.Name == AuthConstants.SystemRoles.Administrator,
+                cancellationToken
+            );
+
+        if (administratorRole is null)
+        {
+            return;
+        }
+
+        var credentialScopeCodes = new[]
+        {
+            AuthConstants.Scopes.UserChangePassword,
+            AuthConstants.Scopes.UserSendCredentials,
+            AuthConstants.Scopes.UserImpersonate,
+        };
+
+        var credentialScopeIds = await dbContext.Scopes
+            .Where(x => x.IsActive && credentialScopeCodes.Contains(x.Code))
+            .Select(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        foreach (var scopeId in credentialScopeIds)
+        {
+            administratorRole.AssignScope(scopeId, assignedBy: null);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var userIds = await dbContext.UserRoles
+            .Where(x => x.RoleId == administratorRole.Id)
+            .Select(x => x.UserId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        foreach (var userId in userIds)
+        {
+            await permissionCache.RemoveAsync(userId, cancellationToken);
+        }
+    }
+
+    private async Task EnsureSellerVisibilityRoleScopesAsync(CancellationToken cancellationToken)
+    {
+        var scopeIds = await dbContext.Scopes
+            .Where(x => x.IsActive && new[]
+            {
+                RateRequestCreateScope,
+                RateRequestViewSelectedScope,
+                RateRequestViewAllScope,
+            }.Contains(x.Code))
+            .ToDictionaryAsync(x => x.Code, x => x.Id, cancellationToken);
+
+        var roleScopes = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            [SellerSupervisorRole] = [RateRequestCreateScope, RateRequestViewSelectedScope],
+            [SellerChiefRole] = [RateRequestCreateScope, RateRequestViewAllScope],
+        };
+
+        foreach (var definition in roleScopes)
+        {
+            var role = await dbContext.Roles
+                .Include(x => x.Scopes)
+                .FirstOrDefaultAsync(x => x.Name == definition.Key, cancellationToken);
+
+            if (role is null)
+            {
+                continue;
+            }
+
+            foreach (var scopeCode in definition.Value)
+            {
+                if (scopeIds.TryGetValue(scopeCode, out var scopeId))
+                {
+                    role.AssignScope(scopeId, assignedBy: null);
+                }
+            }
+
+            var userIds = await dbContext.UserRoles
+                .Where(x => x.RoleId == role.Id)
+                .Select(x => x.UserId)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            foreach (var userId in userIds)
+            {
+                await permissionCache.RemoveAsync(userId, cancellationToken);
+            }
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task AssignAllScopesToSuperUserAsync(CancellationToken cancellationToken)
     {
         var rules = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
@@ -286,6 +455,17 @@ public sealed class DatabaseSeeder(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        var superUserIds = await dbContext.UserRoles
+            .Where(x => x.RoleId == superUserRole.Id)
+            .Select(x => x.UserId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        foreach (var userId in superUserIds)
+        {
+            await permissionCache.RemoveAsync(userId, cancellationToken);
+        }
     }
 
     private async Task AssignAllScopesToSuperUserAsync(CancellationToken cancellationToken)
@@ -369,11 +549,26 @@ public sealed class DatabaseSeeder(
         var userName = _superAdmin.UserName.Trim();
         var displayName = string.IsNullOrWhiteSpace(_superAdmin.DisplayName) ? userName : _superAdmin.DisplayName.Trim();
 
-        var superUserRole = await dbContext.Roles.FirstOrDefaultAsync(x => x.Name == AuthConstants.SystemRoles.SuperUser, cancellationToken);
-        if (superUserRole is null) return;
+        var superUserRole = await dbContext.Roles.FirstOrDefaultAsync(
+            x => x.Name == AuthConstants.SystemRoles.SuperUser,
+            cancellationToken
+        );
 
-        var existingUser = await dbContext.Users.Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Email == email || x.UserName == userName, cancellationToken);
+        if (superUserRole is null)
+        {
+            existingUser.AssignRole(superUserRole.Id, assignedBy: null);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await permissionCache.RemoveAsync(existingUser.Id, cancellationToken);
+            return;
+        }
+
+        var existingUser = await dbContext.Users
+            .Include(x => x.Roles)
+            .FirstOrDefaultAsync(
+                x => x.Email == email || x.UserName == userName,
+                cancellationToken
+            );
+
         if (existingUser is not null)
         {
             existingUser.AssignRole(superUserRole.Id, assignedBy: null);
@@ -382,7 +577,17 @@ public sealed class DatabaseSeeder(
             return;
         }
 
-        var user = User.Create(userName, email, displayName, UserType.Internal, passwordHasher.Hash(_superAdmin.Password), createdBy: null);
+        var passwordHash = passwordHasher.Hash(_superAdmin.Password);
+
+        var user = User.Create(
+            userName,
+            email,
+            displayName,
+            UserType.Internal,
+            passwordHash,
+            createdBy: null
+        );
+
         user.AssignRole(superUserRole.Id, assignedBy: null);
         await dbContext.Users.AddAsync(user, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
