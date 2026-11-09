@@ -11,10 +11,12 @@ using Dhole.Auth.Domain.Users.Entities;
 using Dhole.Auth.Persistence.Auditing;
 using Dhole.Auth.Persistence.Messaging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace Dhole.Auth.Persistence.DbContexts;
 
-public sealed class ServiceDbContext(DbContextOptions<ServiceDbContext> options)
+public sealed class ServiceDbContext(
+    DbContextOptions<ServiceDbContext> options, IConfiguration? realtimeConfiguration = null)
     : AppDbContextBase(options)
 {
     private const string SourceService = "DholeAuthService";
@@ -34,12 +36,14 @@ public sealed class ServiceDbContext(DbContextOptions<ServiceDbContext> options)
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        AppendRealtimeUserInvalidations();
         AddDomainEventsToOutbox();
         return base.SaveChangesAsync(cancellationToken);
     }
 
     public override int SaveChanges()
     {
+        AppendRealtimeUserInvalidations();
         AddDomainEventsToOutbox();
         return base.SaveChanges();
     }
@@ -54,6 +58,51 @@ public sealed class ServiceDbContext(DbContextOptions<ServiceDbContext> options)
 
         modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
         modelBuilder.ApplyConfiguration(new InboxMessageConfiguration());
+    }
+
+    private void AppendRealtimeUserInvalidations()
+    {
+        if (!AuthRealtimeInvalidation.IsEnabled(realtimeConfiguration))
+            return;
+        ChangeTracker.DetectChanges();
+        // Includes role/scope assignment and revocation even when the User
+        // aggregate is not tracked by the command handler. No login heartbeat.
+        var affected = ChangeTracker.Entries<User>()
+            .Where(x => x.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
+                        x.Entity.DomainEvents.Count > 0)
+            .Select(x => x.Entity.Id)
+            .Concat(ChangeTracker.Entries<UserRole>()
+                .Where(x => x.State is EntityState.Added or EntityState.Deleted)
+                .Select(x => x.Entity.UserId))
+            .Concat(ChangeTracker.Entries<UserScope>()
+                .Where(x => x.State is EntityState.Added or EntityState.Deleted)
+                .Select(x => x.Entity.UserId))
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .ToArray();
+        foreach (var userId in affected)
+        {
+            var eventId = Guid.NewGuid();
+            var timestamp = DateTimeOffset.UtcNow;
+            var correlationId =
+                (AuditExecutionContextAccessor.Current?.CorrelationId ?? eventId).ToString("D");
+            OutboxMessages.Add(new OutboxMessage
+            {
+                EventId = eventId,
+                EventType = AuthRealtimeInvalidation.Type,
+                EventName = AuthRealtimeInvalidation.Type,
+                SourceService = SourceService,
+                // The historical serializer adds one; never read auth secrets.
+                PayloadJson = AuthRealtimeInvalidation.Serialize(
+                    eventId, userId,
+                    AuthRealtimeInvalidation.NextVersionHint() - 1,
+                    correlationId, timestamp),
+                CorrelationId = correlationId,
+                Status = OutboxMessageStatus.Pending,
+                RetryCount = 0,
+                CreatedAtUtc = timestamp.UtcDateTime
+            });
+        }
     }
 
     private void AddDomainEventsToOutbox()

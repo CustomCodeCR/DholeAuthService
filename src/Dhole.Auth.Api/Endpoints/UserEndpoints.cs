@@ -1,3 +1,5 @@
+using Dhole.Auth.Persistence.DbContexts;
+using Microsoft.EntityFrameworkCore;
 using CustomCodeFramework.Api.Responses;
 using CustomCodeFramework.Core.Pagination;
 using CustomCodeFramework.Cqrs.Dispatching;
@@ -28,6 +30,17 @@ public static class UserEndpoints
     public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/auth/users").WithTags("Users").RequireAuthorization();
+
+        // F6.04: check existence/permissions without returning identity data.
+        // Gateway delegates the original bearer on subscribe AND each delivery.
+        group.MapGet("/{userId:guid}/realtime-access", async (
+            Guid userId, ServiceDbContext db, CancellationToken cancellationToken) =>
+        {
+            var visible = await db.Users.AsNoTracking()
+                .AnyAsync(x => x.Id == userId && !x.IsDeleted, cancellationToken);
+            return visible ? Results.Ok() : Results.NotFound();
+        }).RequireScope(AuthScopeNames.UsersView);
+
 
         group.MapGet(
             "/",
