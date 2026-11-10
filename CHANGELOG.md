@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2026-11-10
+
+- MINOR DH-20261110-CRM-ADMIN-CALENDAR-069: Auth interno transmite roles vigentes y el directorio activo requerido para consulta de todas las agendas CRM por administradores. Preserva los permisos Auth del release 1.2.2.
+- Ecosistema 1.18.0; CI y staging pendientes, sin autorización de producción.
+
 ## [1.2.2] - 2026-11-10
 
 - DH-20261110-CRM-QUOTE-AUTH-SCOPES-070: registra `crm.quote.read` y `crm.quote.link` en el catálogo Auth, requerido por las cotizaciones del prospecto en CRM.
