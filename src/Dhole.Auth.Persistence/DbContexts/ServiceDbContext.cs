@@ -8,6 +8,8 @@ using Dhole.Auth.Domain.Roles.Entities;
 using Dhole.Auth.Domain.Scopes.Entities;
 using Dhole.Auth.Domain.Sessions.Entities;
 using Dhole.Auth.Domain.Users.Entities;
+using Dhole.Auth.Domain.Users.Events;
+using Dhole.Auth.Domain.Sessions.Events;
 using Dhole.Auth.Persistence.Auditing;
 using Dhole.Auth.Persistence.Messaging;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +39,7 @@ public sealed class ServiceDbContext(
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         AppendRealtimeUserInvalidations();
+        AppendRealtimeSecurityInvalidations();
         AddDomainEventsToOutbox();
         return base.SaveChangesAsync(cancellationToken);
     }
@@ -44,6 +47,7 @@ public sealed class ServiceDbContext(
     public override int SaveChanges()
     {
         AppendRealtimeUserInvalidations();
+        AppendRealtimeSecurityInvalidations();
         AddDomainEventsToOutbox();
         return base.SaveChanges();
     }
@@ -103,6 +107,67 @@ public sealed class ServiceDbContext(
                 CreatedAtUtc = timestamp.UtcDateTime
             });
         }
+    }
+
+    private void AppendRealtimeSecurityInvalidations()
+    {
+        if (!AuthRealtimeInvalidation.IsEnabled(realtimeConfiguration))
+            return;
+        ChangeTracker.DetectChanges();
+
+        // Never publish on login/refresh alone. Only persisted security changes.
+        var users = ChangeTracker.Entries<User>()
+            .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted &&
+                        e.Entity.DomainEvents.Count > 0)
+            .Select(e => e.Entity)
+            .ToArray();
+        var changedUsers = users.Select(e => e.Id)
+            .Concat(ChangeTracker.Entries<UserRole>()
+                .Where(e => e.State is EntityState.Added or EntityState.Deleted)
+                .Select(e => e.Entity.UserId))
+            .Concat(ChangeTracker.Entries<UserScope>()
+                .Where(e => e.State is EntityState.Added or EntityState.Deleted)
+                .Select(e => e.Entity.UserId))
+            .Where(id => id != Guid.Empty)
+            .Distinct();
+
+        foreach (var userId in changedUsers)
+        {
+            var tracked = users.FirstOrDefault(u => u.Id == userId);
+            var forceLogout = tracked is not null &&
+                (tracked.IsLocked || !tracked.IsActive || tracked.IsDeleted ||
+                 tracked.DomainEvents.Any(e => e is UserPasswordChangedDomainEvent));
+            QueueSecurityEvent(userId, null, forceLogout ? "forceLogout" : "refreshPermissions");
+        }
+
+        // One-session revocation must not log out another active session of that user.
+        foreach (var session in ChangeTracker.Entries<Session>()
+            .Where(e => e.State == EntityState.Modified && e.Entity.IsRevoked &&
+                        e.Entity.DomainEvents.Any(d =>
+                            d is SessionRevokedDomainEvent or SessionLoggedOutDomainEvent))
+            .Select(e => e.Entity))
+            QueueSecurityEvent(session.UserId, session.Id, "forceLogout");
+    }
+
+    private void QueueSecurityEvent(Guid userId, Guid? sessionId, string action)
+    {
+        var eventId = Guid.NewGuid();
+        var at = DateTimeOffset.UtcNow;
+        var correlationId =
+            (AuditExecutionContextAccessor.Current?.CorrelationId ?? eventId).ToString("D");
+        OutboxMessages.Add(new OutboxMessage
+        {
+            EventId = eventId,
+            EventType = AuthRealtimeInvalidation.SecurityType,
+            EventName = AuthRealtimeInvalidation.SecurityType,
+            SourceService = SourceService,
+            PayloadJson = AuthRealtimeInvalidation.SerializeSecurity(
+                eventId, userId, sessionId, action, correlationId, at),
+            CorrelationId = correlationId,
+            Status = OutboxMessageStatus.Pending,
+            RetryCount = 0,
+            CreatedAtUtc = at.UtcDateTime
+        });
     }
 
     private void AddDomainEventsToOutbox()
