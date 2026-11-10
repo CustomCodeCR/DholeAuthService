@@ -26,6 +26,20 @@ public sealed class CrmEffectivePermissionTests
     }
 
     [TestMethod]
+    public async Task ActiveSuperUser_ReceivesCrmQuotationScopes_WithoutDirectGrants()
+    {
+        var user = Guid.NewGuid();
+        var activeScopes = new[] { "crm.quote.read", "crm.quote.link" };
+        var repo = new FakePermissionsRepository(
+            new UserPermissionData(user, true, false,
+                [AuthConstants.SystemRoles.SuperUser], [], []), activeScopes);
+        var permissions = await new EffectivePermissionService(repo).GetAsync(user);
+
+        CollectionAssert.Contains(permissions.EffectiveScopes.ToArray(), "crm.quote.read");
+        CollectionAssert.Contains(permissions.EffectiveScopes.ToArray(), "crm.quote.link");
+    }
+
+    [TestMethod]
     public async Task OrdinaryAdministrator_DoesNotInheritCreditApproval()
     {
         var user = Guid.NewGuid();

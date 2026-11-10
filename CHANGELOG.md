@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2] - 2026-11-10
+
+- DH-20261110-CRM-QUOTE-AUTH-SCOPES-070: registra `crm.quote.read` y `crm.quote.link` en el catálogo Auth, requerido por las cotizaciones del prospecto en CRM.
+- Al arrancar, el sembrado de scopes y la asignación al rol SuperUsuario actualizan los permisos efectivos e invalidan su caché; usuarios normales conservan permisos explícitos.
+- Ecosistema Dhole 1.17.15; sin modificaciones a CRM ni bypass de autorización.
+
+
 ## [1.2.1] - 2026-11-05
 
 - Alinea el SemVer y deploys automáticos del componente al release Dhole 1.3.1.
