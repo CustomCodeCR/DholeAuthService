@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1] - 2026-11-10
+
+- DH-20261110-CRM-QUOTE-AUTH-SCOPES-070: registra `crm.quote.read` y `crm.quote.link` requeridos por cotizaciones vinculadas de prospectos CRM y Pricing.
+- El seeder de Auth incorpora ambos scopes al rol SuperUsuario e invalida permisos efectivos en caché tras iniciar; sin bypass para usuarios normales.
+- Release Dhole 1.18.0 coordinado, sin alterar los cambios de agendas/administradores de 1.6.0.
+
+
 ## [1.6.0] - 2026-11-10
 
 - MINOR DH-20261110-CRM-ADMIN-CALENDAR-069: los administradores activos de Auth pueden consultar agendas, actividades, seguimientos, etiquetas y usuarios de todas las agendas CRM; vendedores conservan su aislamiento. El detalle de seguimientos periódicos muestra un título real y datos de la política existente, manteniendo minutas y acuerdos históricos cuando los hay.

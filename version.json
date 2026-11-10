@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "ecosystem": "Dhole",
   "component": "DholeAuthService",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "ecosystemVersion": "1.18.0",
-  "releaseId": "DH-20261110-CRM-ADMIN-CALENDAR-069",
-  "releaseStatus": "candidate-develop-ci-staging-pending",
-  "businessReleaseId": "DH-20261110-CRM-ADMIN-CALENDAR-069"
+  "releaseId": "DH-20261110-CRM-QUOTE-AUTH-SCOPES-070",
+  "releaseStatus": "candidate-develop-ci-pending",
+  "businessReleaseId": "DH-20261110-CRM-QUOTE-AUTH-SCOPES-070"
 }
