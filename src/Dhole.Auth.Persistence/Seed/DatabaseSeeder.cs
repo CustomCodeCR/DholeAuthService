@@ -295,6 +295,12 @@ public sealed class DatabaseSeeder(
             AuthConstants.Scopes.UserChangePassword,
             AuthConstants.Scopes.UserSendCredentials,
             AuthConstants.Scopes.UserImpersonate,
+            AuthConstants.Scopes.UsersView,
+            "crm.lead.read",
+            "crm.lead.read-all",
+            "crm.lead.create",
+            "crm.lead.update",
+            "crm.lead.assign",
         };
 
         var credentialScopeIds = await dbContext.Scopes

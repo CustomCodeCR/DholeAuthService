@@ -40,6 +40,18 @@ public sealed class CrmEffectivePermissionTests
     }
 
     [TestMethod]
+    public async Task ActiveSuperUser_InheritsProspectAssignmentScope()
+    {
+        var user = Guid.NewGuid();
+        var scope = "crm.lead.assign";
+        var repo = new FakePermissionsRepository(
+            new UserPermissionData(user, true, false,
+                [AuthConstants.SystemRoles.SuperUser], [], []), [scope]);
+        var permissions = await new EffectivePermissionService(repo).GetAsync(user);
+        CollectionAssert.Contains(permissions.EffectiveScopes.ToArray(), scope);
+    }
+
+    [TestMethod]
     public async Task OrdinaryAdministrator_DoesNotInheritCreditApproval()
     {
         var user = Guid.NewGuid();

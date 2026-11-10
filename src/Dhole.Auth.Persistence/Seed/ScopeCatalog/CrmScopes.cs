@@ -13,6 +13,7 @@ internal static class CrmScopes
         ScopeCatalog.Create("crm.lead.read", "CRM · Prospectos · Consultar asignados", "Permiso específico de CRM: crm.lead.read."),
         ScopeCatalog.Create("crm.lead.read-all", "CRM · Prospectos · Consultar todos", "Permiso específico de CRM: crm.lead.read-all."),
         ScopeCatalog.Create("crm.lead.create", "CRM · Prospectos · Crear", "Permiso específico de CRM: crm.lead.create."),
+        ScopeCatalog.Create("crm.lead.assign", "CRM · Prospectos · Asignar vendedor", "Permite crear prospectos para otro vendedor y reasignar prospectos autorizados."),
         ScopeCatalog.Create("crm.lead.update", "CRM · Prospectos · Editar", "Permiso específico de CRM: crm.lead.update."),
         ScopeCatalog.Create("crm.lead.convert", "CRM · Prospectos · Convertir a cliente", "Permite convertir un prospecto autorizado en una cuenta comercial."),
         ScopeCatalog.Create("crm.lead.archive", "CRM · Prospectos · Archivar", "Permite archivar prospectos manteniendo sus referencias e historial."),
