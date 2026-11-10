@@ -50,6 +50,7 @@ public static class InternalCrmUserEndpoints
             id = user.Id,
             active = true,
             scopes,
+            roles = effective.Roles.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray(),
             email = user.Email,
             displayName = user.DisplayName
         });
