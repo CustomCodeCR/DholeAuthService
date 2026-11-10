@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.0] - 2026-11-09 (candidate: realtime crítico Auth/Notifications)
+
+- MINOR: emitir eventos de seguridad por Outbox transaccional en cambios de usuario, bloqueos, contraseñas, permisos y revocación de sesiones concretas. Redis Streams mantiene evento minimal sin tokens ni datos privados.
+- Ecosistema candidato 1.17.0, release `DH-20261109-RT-CRITICAL-056`. Sin merge a develop/master, despliegue o certificación WSS multiusuario. CI y staging pendientes.
+
+
 ## [1.4.0] - 2026-11-09 (NotificationsHub universal realtime pilot; candidate)
 
 - MINOR: Preserve existing producer contract and Outbox/REST integration for the NotificationsHub-based pilot.
