@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.6.2] - 2026-11-10
+
+- DH-20261110-CRM-PROSPECT-SELLER-072: agrega crm.lead.assign para asignación de prospectos en CRM; el rol Administrador recibe lectura total de prospectos, creación, edición y asignación, y acceso al directorio Auth para seleccionar vendedores.
+- SuperUsuario obtiene el nuevo scope por el sembrado existente; vendedores normales sin cambios. Ecosistema Dhole 1.18.2.
+
+
 ## [1.6.1] - 2026-11-10
 
 - DH-20261110-CRM-QUOTE-AUTH-SCOPES-070: registra `crm.quote.read` y `crm.quote.link` requeridos por cotizaciones vinculadas de prospectos CRM y Pricing.
