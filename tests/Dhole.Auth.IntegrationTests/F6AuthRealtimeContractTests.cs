@@ -64,3 +64,44 @@ public sealed class F6AuthRealtimeContractTests
             AuthRealtimeInvalidation.Serialize(id, id, 1, "", DateTimeOffset.UtcNow));
     }
 }
+
+
+// Targeted security events are intentionally separate from resource invalidations.
+// They must be delivered to a blocked user even when owner REST access is denied.
+[TestClass]
+public sealed class AuthSecurityRealtimeContractTests
+{
+    [TestMethod]
+    public void Auth_security_revoke_is_scoped_to_one_session_without_credentials()
+    {
+        var userId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var evt = Guid.NewGuid();
+        var json = AuthRealtimeInvalidation.SerializeSecurity(
+            evt, userId, sessionId, "forceLogout", evt.ToString("D"), DateTimeOffset.UtcNow);
+        using var document = JsonDocument.Parse(json);
+        var root = document.RootElement;
+        Assert.AreEqual(AuthRealtimeInvalidation.SecurityType, root.GetProperty("eventType").GetString());
+        Assert.AreEqual(userId.ToString("D"), root.GetProperty("aggregateId").GetString());
+        Assert.AreEqual(sessionId.ToString("D"), root.GetProperty("targetSessionId").GetString());
+        Assert.AreEqual("forceLogout", root.GetProperty("action").GetString());
+        Assert.AreEqual($"auth:user:{userId:D}", root.GetProperty("audienceRef").GetString());
+        foreach (var forbidden in new[] { "password", "secret", "refreshToken", "email", "accessToken" })
+            Assert.IsFalse(json.Contains(forbidden, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [TestMethod]
+    public void Auth_security_envelope_rejects_invalid_actions_and_actors()
+    {
+        var id = Guid.NewGuid();
+        Assert.ThrowsExactly<ArgumentException>(() =>
+            AuthRealtimeInvalidation.SerializeSecurity(id, id, null, "logoutEveryone",
+                id.ToString("D"), DateTimeOffset.UtcNow));
+        Assert.ThrowsExactly<ArgumentException>(() =>
+            AuthRealtimeInvalidation.SerializeSecurity(id, Guid.Empty, null, "forceLogout",
+                id.ToString("D"), DateTimeOffset.UtcNow));
+        Assert.ThrowsExactly<ArgumentException>(() =>
+            AuthRealtimeInvalidation.SerializeSecurity(id, id, Guid.Empty, "forceLogout",
+                id.ToString("D"), DateTimeOffset.UtcNow));
+    }
+}

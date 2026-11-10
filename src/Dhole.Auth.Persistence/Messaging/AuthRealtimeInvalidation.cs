@@ -12,6 +12,7 @@ public static class AuthRealtimeInvalidation
     public const string ReleaseId = "rt-20261107-01";
     public const string Stream = "dhole.auth.realtime.v1";
     public const string Type = "auth.user.changed.v1";
+    public const string SecurityType = "auth.security.changed.v1";
 
     public static bool IsEnabled(IConfiguration? config) =>
         config?.GetValue<bool>("Features:UniversalRealtimeEnabled") == true &&
@@ -34,6 +35,33 @@ public static class AuthRealtimeInvalidation
             if (Interlocked.CompareExchange(ref _lastMicrosecond, next, prior) == prior)
                 return next;
         }
+    }
+
+    // Security events target only the authenticated user (and optionally one session).
+    // They never contain tokens, credentials, role names, or personally identifying data.
+    public static string SerializeSecurity(Guid eventId, Guid userId,
+        Guid? targetSessionId, string action, string correlationId, DateTimeOffset utc)
+    {
+        if (eventId == Guid.Empty || userId == Guid.Empty ||
+            targetSessionId == Guid.Empty ||
+            action is not ("forceLogout" or "refreshPermissions") ||
+            string.IsNullOrWhiteSpace(correlationId) || utc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Invalid Auth security realtime invalidation.");
+
+        return JsonSerializer.Serialize(new
+        {
+            eventId,
+            eventType = SecurityType,
+            schemaVersion = 1,
+            aggregateType = "user",
+            aggregateId = userId.ToString("D"),
+            occurredAtUtc = utc,
+            producer = "DholeAuthService",
+            correlationId,
+            audienceRef = $"auth:user:{userId:D}",
+            action,
+            targetSessionId = targetSessionId?.ToString("D")
+        });
     }
 
     public static string Serialize(Guid eventId, Guid userId, long tokenVersion,
