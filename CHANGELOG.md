@@ -1,6 +1,8 @@
 # Changelog
 
-## [1.2.3] - 2026-11-10
+## [1.2.4] - 2026-11-10
+
+- Ajuste de referencia constante AuthConstants.Scopes.UserView para compilación de asignación de prospectos.
 
 - DH-20261110-CRM-PROSPECT-SELLER-072: agrega crm.lead.assign para asignación de prospectos en CRM; el rol Administrador recibe lectura total de prospectos, creación, edición y asignación, y acceso al directorio Auth para seleccionar vendedores.
 - SuperUsuario obtiene el nuevo scope por el sembrado existente; los vendedores normales no reciben permisos adicionales. Ecoversión Dhole 1.17.16.

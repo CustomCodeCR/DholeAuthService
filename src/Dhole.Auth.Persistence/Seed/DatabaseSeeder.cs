@@ -295,7 +295,7 @@ public sealed class DatabaseSeeder(
             AuthConstants.Scopes.UserChangePassword,
             AuthConstants.Scopes.UserSendCredentials,
             AuthConstants.Scopes.UserImpersonate,
-            AuthConstants.Scopes.UsersView,
+            AuthConstants.Scopes.UserView,
             "crm.lead.read",
             "crm.lead.read-all",
             "crm.lead.create",
