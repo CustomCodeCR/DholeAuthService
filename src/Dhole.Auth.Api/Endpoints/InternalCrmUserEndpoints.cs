@@ -18,6 +18,9 @@ public static class InternalCrmUserEndpoints
         app.MapGet("/api/internal/auth/crm-users/{userId:guid}", GetCrmUserAsync)
             .WithTags("Internal")
             .AllowAnonymous();
+        app.MapGet("/api/internal/auth/crm-users/directory", GetActiveCrmUsersAsync)
+            .WithTags("Internal")
+            .AllowAnonymous();
         app.MapGet("/api/internal/auth/crm-users/by-username/{username}", GetCrmUserByUsernameAsync)
             .WithTags("Internal")
             .AllowAnonymous();
@@ -77,6 +80,32 @@ public static class InternalCrmUserEndpoints
         return userId.HasValue
             ? await GetCrmUserAsync(userId.Value, request, configuration, db, permissions, ct)
             : Results.NotFound();
+    }
+
+    // Internal and service-key protected. CRM applies administrator authorization
+    // before proxying these public employee labels to a logged-in administrator.
+    private static async Task<IResult> GetActiveCrmUsersAsync(
+        HttpRequest request,IConfiguration configuration,ServiceDbContext db,
+        int? page,int? pageSize,string? search,CancellationToken ct)
+    {
+        if(!Authorized(request,configuration))return Results.Unauthorized();
+        if(search?.Length>100)return Results.BadRequest(new{error="Search too long"});
+        var query=db.Users.AsNoTracking()
+            .Where(u=>!u.IsDeleted && u.IsActive && !u.IsLocked);
+        if(!string.IsNullOrWhiteSpace(search))
+        {
+            var term=search.Trim().ToLower();
+            query=query.Where(u=>u.DisplayName.ToLower().Contains(term) ||
+                u.UserName.ToLower().Contains(term));
+        }
+        var n=Math.Max(1,page??1);
+        var size=Math.Clamp(pageSize??100,1,100);
+        var total=await query.CountAsync(ct);
+        var users=await query.OrderBy(u=>u.DisplayName).ThenBy(u=>u.Id)
+            .Skip((n-1)*size).Take(size)
+            .Select(u=>new{id=u.Id,displayName=u.DisplayName,userName=u.UserName})
+            .ToListAsync(ct);
+        return Results.Ok(new{total,page=n,pageSize=size,items=users});
     }
 
     private static bool Authorized(HttpRequest req, IConfiguration configuration)
