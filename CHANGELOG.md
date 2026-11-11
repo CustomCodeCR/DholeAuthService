@@ -1,7 +1,7 @@
 ## [1.8.1] - 2026-11-11
 
 - PATCH DH-20261111-CRM-RESPONSIBLES-SCOPES-086: directorio de responsables CRM filtrado por scopes efectivos crm.activity.read, crm.activity.read-all o crm.followup.manage, incluyendo permisos directos, roles activos y SuperUsuario, sin exigir rol Vendedor.
-- Ecosistema Dhole 1.27.1. REST/SignalR conservados. CI y staging pendientes, producción no autorizada.
+- Ecosistema Dhole 1.27.2. REST/SignalR conservados. CI y staging pendientes, producción no autorizada.
 
 ## [1.8.0] - 2026-11-10
 
