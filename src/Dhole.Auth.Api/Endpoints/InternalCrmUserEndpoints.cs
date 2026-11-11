@@ -96,7 +96,7 @@ public static class InternalCrmUserEndpoints
         // Resolve membership from Auth roles, not user names, JWT claims or UI filters.
         var eligibleRoles=db.Roles.AsNoTracking()
             .Where(role=>!role.IsDeleted && role.IsActive &&
-                (role.Name.ToLower()=="vendedor" ||
+                (role.Name.ToLower()=="vendedor" || role.Name.ToLower()=="vendedores" ||
                  role.Name.ToLower()=="vendedor supervisor" ||
                  role.Name.ToLower()=="vendedor jefe" ||
                  role.Name==AuthConstants.SystemRoles.SuperUser))
