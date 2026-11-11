@@ -1,3 +1,8 @@
+## [1.6.4] - 2026-11-10
+
+- PATCH DH-20261110-CRM-SELLERS-COMMITMENTS-078: el directorio interno CRM devuelve únicamente usuarios activos con rol Vendedor/Vendedores vigente; la paginación y el filtro por nombre se aplican sobre vendedores autorizados.
+- Versión global 1.20.1; conserva protección con clave de servicio, consultas REST existentes y notificaciones realtime. CI y staging pendientes.
+
 ## [1.6.3] - 2026-11-10
 
 - PATCH DH-20261110-CRM-GLOBAL-AGENDAS-076: registra crm.activity.read-all en el catálogo Auth; SuperUsuario recibe el permiso mediante scopes efectivos. La lectura global adicional por combinación crm.account.read-all + crm.lead.read-all se valida en CRM. No amplía el directorio público.

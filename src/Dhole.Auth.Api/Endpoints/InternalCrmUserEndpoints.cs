@@ -91,7 +91,13 @@ public static class InternalCrmUserEndpoints
         if(!Authorized(request,configuration))return Results.Unauthorized();
         if(search?.Length>100)return Results.BadRequest(new{error="Search too long"});
         var query=db.Users.AsNoTracking()
-            .Where(u=>!u.IsDeleted && u.IsActive && !u.IsLocked);
+            .Where(u=>!u.IsDeleted && u.IsActive && !u.IsLocked)
+            // The agenda directory is for actual salespeople, not every active Auth user.
+            // Filter before pagination so Total and every page contain only sellers.
+            .Where(u=>db.UserRoles.Any(assigned=>assigned.UserId==u.Id &&
+                db.Roles.Any(role=>role.Id==assigned.RoleId && role.IsActive &&
+                    !role.IsDeleted &&
+                    (role.Name.ToLower()=="vendedor" || role.Name.ToLower()=="vendedores"))));
         if(!string.IsNullOrWhiteSpace(search))
         {
             var term=search.Trim().ToLower();
