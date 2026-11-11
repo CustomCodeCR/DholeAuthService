@@ -1,3 +1,8 @@
+## [1.8.1] - 2026-11-11
+
+- PATCH DH-20261111-CRM-RESPONSIBLES-SCOPES-086: directorio de responsables CRM filtrado por scopes efectivos crm.activity.read, crm.activity.read-all o crm.followup.manage, incluyendo permisos directos, roles activos y SuperUsuario, sin exigir rol Vendedor.
+- Ecosistema Dhole 1.29.1. REST/SignalR conservados. CI y staging aprobados; promoción a master solicitada y autorizada.
+
 ## [1.8.0] - 2026-11-10
 
 - MINOR DH-20261110-CRM-ACCOUNT-CATEGORY-SCOPE-082: El catálogo de Auth registra crm.account.category.manage para autorizar la clasificación de clientes sin otorgarlo a vendedores por defecto.
