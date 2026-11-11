@@ -2,6 +2,8 @@ using System.Security.Cryptography;
 using System.Text;
 using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Persistence.DbContexts;
+using Dhole.Auth.Domain.Users.Enums;
+using Dhole.Auth.Domain.Shared;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dhole.Auth.Api.Endpoints;
@@ -90,8 +92,19 @@ public static class InternalCrmUserEndpoints
     {
         if(!Authorized(request,configuration))return Results.Unauthorized();
         if(search?.Length>100)return Results.BadRequest(new{error="Search too long"});
+        // Calendar assignees must be active internal salespeople or superusers.
+        // Resolve membership from Auth roles, not user names, JWT claims or UI filters.
+        var eligibleRoles=db.Roles.AsNoTracking()
+            .Where(role=>!role.IsDeleted && role.IsActive &&
+                (role.Name.ToLower()=="vendedor" ||
+                 role.Name.ToLower()=="vendedor supervisor" ||
+                 role.Name.ToLower()=="vendedor jefe" ||
+                 role.Name==AuthConstants.SystemRoles.SuperUser))
+            .Select(role=>role.Id);
         var query=db.Users.AsNoTracking()
-            .Where(u=>!u.IsDeleted && u.IsActive && !u.IsLocked);
+            .Where(u=>!u.IsDeleted && u.IsActive && !u.IsLocked &&
+                u.UserType==UserType.Internal &&
+                db.UserRoles.Any(ur=>ur.UserId==u.Id && eligibleRoles.Contains(ur.RoleId)));
         if(!string.IsNullOrWhiteSpace(search))
         {
             var term=search.Trim().ToLower();
