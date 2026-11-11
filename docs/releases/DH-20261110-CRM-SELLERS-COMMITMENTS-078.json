@@ -1,0 +1,13 @@
+{
+  "releaseId": "DH-20261110-CRM-SELLERS-COMMITMENTS-078",
+  "releaseType": "PATCH",
+  "component": "DholeAuthService",
+  "from": "1.2.5",
+  "to": "1.2.6",
+  "ecosystemVersion": "1.20.1",
+  "status": "candidate",
+  "date": "2026-11-10",
+  "changes": [
+    "Only users with active Vendedor role in CRM internal directory"
+  ]
+}
