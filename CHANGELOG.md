@@ -1,3 +1,8 @@
+## [1.6.3] - 2026-11-10
+
+- PATCH DH-20261110-CRM-GLOBAL-AGENDAS-076: registra crm.activity.read-all en el catálogo Auth; SuperUsuario recibe el permiso mediante scopes efectivos. La lectura global adicional por combinación crm.account.read-all + crm.lead.read-all se valida en CRM. No amplía el directorio público.
+- Release Dhole 1.19.5; compilación, CI y staging pendientes.
+
 # Changelog
 
 ## [1.6.2] - 2026-11-10
