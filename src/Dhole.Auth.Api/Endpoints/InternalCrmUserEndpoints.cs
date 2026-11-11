@@ -91,18 +91,28 @@ public static class InternalCrmUserEndpoints
     {
         if(!Authorized(request,configuration))return Results.Unauthorized();
         if(search?.Length>100)return Results.BadRequest(new{error="Search too long"});
+        var agendaScopes = new[] { "crm.activity.read", "crm.activity.read-all", "crm.followup.manage" };
         var query=db.Users.AsNoTracking()
             .Where(u=>!u.IsDeleted && u.IsActive && !u.IsLocked &&
                 u.UserType==UserType.Internal)
-            // The agenda directory is exclusively for active Vendedor roles and superusers.
-            // Filter before pagination so Total and every page contain only sellers.
-            .Where(u=>db.UserRoles.Any(assigned=>assigned.UserId==u.Id &&
-                db.Roles.Any(role=>role.Id==assigned.RoleId && role.IsActive &&
-                    !role.IsDeleted &&
-                    (role.Name.ToLower()=="vendedor" || role.Name.ToLower()=="vendedores" ||
-                     role.Name.ToLower()=="vendedor supervisor" ||
-                     role.Name.ToLower()=="vendedor jefe" ||
-                     role.Name.ToLower()=="superusuario"))));
+            // Select by Auth effective scopes, not by commercial role name.
+            // Direct permissions, active role permissions and active SuperUsuario are eligible.
+            .Where(u =>
+                db.UserScopes.Any(grant =>
+                    grant.UserId == u.Id &&
+                    db.Scopes.Any(scope =>
+                        scope.Id == grant.ScopeId && scope.IsActive &&
+                        agendaScopes.Contains(scope.Code))) ||
+                db.UserRoles.Any(assigned =>
+                    assigned.UserId == u.Id &&
+                    db.Roles.Any(role =>
+                        role.Id == assigned.RoleId && role.IsActive && !role.IsDeleted &&
+                        (role.Name.ToLower() == "superusuario" ||
+                         db.RoleScopes.Any(grant =>
+                             grant.RoleId == role.Id &&
+                             db.Scopes.Any(scope =>
+                                 scope.Id == grant.ScopeId && scope.IsActive &&
+                                 agendaScopes.Contains(scope.Code)))))));
         if(!string.IsNullOrWhiteSpace(search))
         {
             var term=search.Trim().ToLower();
