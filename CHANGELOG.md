@@ -1,7 +1,7 @@
 ## [1.8.1] - 2026-11-11
 
 - PATCH DH-20261111-CRM-RESPONSIBLES-SCOPES-086: el directorio interno de responsables CRM filtra usuarios internos activos por crm.activity.read, crm.activity.read-all o crm.followup.manage, incluyendo permisos directos, heredados de roles activos y superusuarios. Ya no depende del nombre del rol Vendedor.
-- Ecosistema Dhole 1.27.1; REST y SignalR conservados. CI/staging pendientes. Despliegue productivo no autorizado.
+- Ecosistema Dhole 1.27.2; REST y SignalR conservados. CI/staging pendientes. Despliegue productivo no autorizado.
 
 ## [1.8.0] - 2026-11-10
 
