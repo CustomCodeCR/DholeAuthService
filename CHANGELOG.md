@@ -1,3 +1,8 @@
+## [1.3.0] - 2026-11-10
+
+- MINOR DH-20261110-CRM-CONTACTS-SELLERS-078: el directorio interno CRM lista exclusivamente usuarios internos activos con rol Vendedor, Vendedor Supervisor, Vendedor Jefe o SuperUsuario; excluye usuarios bloqueados, sin rol elegible y roles desactivados.
+- Mantiene la autenticación entre servicios y no expone datos sensibles. Release coordinado con Web, CRM y System. Pruebas CI y staging obligatorias.
+
 ## [1.2.5] - 2026-11-10
 
 - PATCH DH-20261110-CRM-GLOBAL-AGENDAS-076: incorpora crm.activity.read-all al catálogo de Auth y expone por canal interno autenticado el directorio de usuarios activos para la agenda CRM; no publica el directorio a clientes sin autorización.
