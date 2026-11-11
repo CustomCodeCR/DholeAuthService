@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Persistence.DbContexts;
+using Dhole.Auth.Domain.Users.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dhole.Auth.Api.Endpoints;
@@ -91,13 +92,17 @@ public static class InternalCrmUserEndpoints
         if(!Authorized(request,configuration))return Results.Unauthorized();
         if(search?.Length>100)return Results.BadRequest(new{error="Search too long"});
         var query=db.Users.AsNoTracking()
-            .Where(u=>!u.IsDeleted && u.IsActive && !u.IsLocked)
-            // The agenda directory is for actual salespeople, not every active Auth user.
+            .Where(u=>!u.IsDeleted && u.IsActive && !u.IsLocked &&
+                u.UserType==UserType.Internal)
+            // The agenda directory is exclusively for active Vendedor roles and superusers.
             // Filter before pagination so Total and every page contain only sellers.
             .Where(u=>db.UserRoles.Any(assigned=>assigned.UserId==u.Id &&
                 db.Roles.Any(role=>role.Id==assigned.RoleId && role.IsActive &&
                     !role.IsDeleted &&
-                    (role.Name.ToLower()=="vendedor" || role.Name.ToLower()=="vendedores"))));
+                    (role.Name.ToLower()=="vendedor" || role.Name.ToLower()=="vendedores" ||
+                     role.Name.ToLower()=="vendedor supervisor" ||
+                     role.Name.ToLower()=="vendedor jefe" ||
+                     role.Name.ToLower()=="superusuario"))));
         if(!string.IsNullOrWhiteSpace(search))
         {
             var term=search.Trim().ToLower();
