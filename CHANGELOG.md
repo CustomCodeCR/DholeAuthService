@@ -1,3 +1,8 @@
+## [1.3.0] - 2026-11-10
+
+- MINOR DH-20261110-CRM-CONTACTS-ROLE-MULTISELECT-079: El directorio CRM incluye exclusivamente usuarios internos activos con rol Vendedor, Vendedores, Vendedor Supervisor, Vendedor Jefe o SuperUsuario; filtrado previo a paginación.
+- Se mantienen API REST y realtime existentes. Validación por CI y staging antes de confirmar despliegue.
+
 ## [1.2.6] - 2026-11-10
 
 - PATCH DH-20261110-CRM-SELLERS-COMMITMENTS-078: el directorio interno CRM devuelve únicamente usuarios activos con rol Vendedor/Vendedores vigente; la paginación y el filtro por nombre se aplican sobre vendedores autorizados.
