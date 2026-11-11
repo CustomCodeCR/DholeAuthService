@@ -1,3 +1,8 @@
+## [1.7.0] - 2026-11-10
+
+- MINOR DH-20261110-CRM-CONTACTS-SELLERS-078: amplía el directorio filtrado de vendedores para contemplar Vendedor, Vendedores, Vendedor Supervisor, Vendedor Jefe y SuperUsuario (solo usuarios internos activos).
+- No cambia autorizaciones REST ni credenciales; continúa el filtrado seguro introducido en 1.6.4.
+
 ## [1.6.4] - 2026-11-10
 
 - PATCH DH-20261110-CRM-SELLERS-COMMITMENTS-078: el directorio interno CRM devuelve únicamente usuarios activos con rol Vendedor/Vendedores vigente; la paginación y el filtro por nombre se aplican sobre vendedores autorizados.
