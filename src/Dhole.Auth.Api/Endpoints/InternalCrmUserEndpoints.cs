@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Persistence.DbContexts;
+using Dhole.Auth.Domain.Users.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dhole.Auth.Api.Endpoints;
