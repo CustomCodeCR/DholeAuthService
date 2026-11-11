@@ -1,3 +1,8 @@
+## [1.8.0] - 2026-11-10
+
+- MINOR DH-20261110-CRM-ACCOUNT-CATEGORY-SCOPE-082: El catálogo de Auth registra crm.account.category.manage para autorizar la clasificación de clientes sin otorgarlo a vendedores por defecto.
+- Pruebas CI, staging y autorización de producción pendientes.
+
 ## [1.3.0] - 2026-11-10
 
 - MINOR DH-20261110-CRM-CONTACTS-ROLE-MULTISELECT-079: El directorio CRM incluye exclusivamente usuarios internos activos con rol Vendedor, Vendedores, Vendedor Supervisor, Vendedor Jefe o SuperUsuario; filtrado previo a paginación.
