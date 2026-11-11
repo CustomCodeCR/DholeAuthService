@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "ecosystem": "Dhole",
   "component": "DholeAuthService",
-  "version": "1.7.0",
-  "ecosystemVersion": "1.21.0",
-  "releaseId": "DH-20261110-CRM-CONTACTS-SELLERS-078",
-  "releaseStatus": "candidate-develop-CI-staging-pending",
-  "businessReleaseId": "DH-20261110-CRM-CONTACTS-SELLERS-078"
+  "version": "1.8.0",
+  "ecosystemVersion": "1.24.0",
+  "releaseId": "DH-20261110-CRM-ACCOUNT-CATEGORY-SCOPE-082",
+  "releaseStatus": "candidate-develop-ci-staging-pending",
+  "businessReleaseId": "DH-20261110-CRM-ACCOUNT-CATEGORY-SCOPE-082"
 }

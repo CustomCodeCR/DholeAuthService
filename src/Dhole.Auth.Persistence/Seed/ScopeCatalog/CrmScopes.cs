@@ -8,6 +8,7 @@ internal static class CrmScopes
         ScopeCatalog.Create("crm.account.read-all", "CRM · Clientes · Consultar todos", "Permiso específico de CRM: crm.account.read-all."),
         ScopeCatalog.Create("crm.account.create", "CRM · Clientes · Crear", "Permiso específico de CRM: crm.account.create."),
         ScopeCatalog.Create("crm.account.update", "CRM · Clientes · Editar", "Permiso específico de CRM: crm.account.update."),
+        ScopeCatalog.Create("crm.account.category.manage", "CRM · Clientes · Asignar categoría", "Permite definir o cambiar la categoría comercial del cliente al crearlo, editarlo o convertir un prospecto. No se concede a vendedores por defecto."),
         ScopeCatalog.Create("crm.account.assign", "CRM · Clientes · Asignar ejecutivo", "Permiso específico de CRM: crm.account.assign."),
         ScopeCatalog.Create("crm.account.archive", "CRM · Clientes · Archivar", "Permiso específico de CRM: crm.account.archive."),
         ScopeCatalog.Create("crm.lead.read", "CRM · Prospectos · Consultar asignados", "Permiso específico de CRM: crm.lead.read."),
