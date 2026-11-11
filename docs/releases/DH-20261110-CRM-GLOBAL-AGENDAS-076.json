@@ -1,0 +1,10 @@
+{
+  "releaseId": "DH-20261110-CRM-GLOBAL-AGENDAS-076",
+  "releaseType": "PATCH",
+  "component": "DholeAuthService",
+  "componentVersion": "1.2.5",
+  "ecosystemVersion": "1.19.5",
+  "summary": "CRM calendar scopes and private active-user directory",
+  "status": "candidate",
+  "date": "2026-11-10"
+}

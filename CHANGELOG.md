@@ -1,3 +1,8 @@
+## [1.2.5] - 2026-11-10
+
+- PATCH DH-20261110-CRM-GLOBAL-AGENDAS-076: incorpora crm.activity.read-all al catálogo de Auth y expone por canal interno autenticado el directorio de usuarios activos para la agenda CRM; no publica el directorio a clientes sin autorización.
+- Release Dhole 1.19.5; CI y staging pendientes, sin autorización de producción.
+
 # Changelog
 
 ## [1.2.4] - 2026-11-10
