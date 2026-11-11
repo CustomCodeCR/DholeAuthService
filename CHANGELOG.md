@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.3.0] - 2026-11-10
+
+- MINOR DH-20261110-CRM-AGENDA-UNIFIED-077: directorio interno de usuarios activos para CRM protegido mediante clave de servicio; sin contraseñas ni tokens.
+- CI, pruebas y staging pendientes; producción no autorizada. REST y realtime existentes conservados.
+
+
 ## [1.2.4] - 2026-11-10
 
 - Ajuste de referencia constante AuthConstants.Scopes.UserView para compilación de asignación de prospectos.
