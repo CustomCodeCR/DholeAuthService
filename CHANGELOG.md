@@ -1,3 +1,8 @@
+## [1.9.2] - 2026-11-13
+
+- PATCH DH-20261113-CRM-COMMERCIAL-LOG-ACL-134: release coordinado que refuerza la ACL de prospectos en la Bitácora CRM. Sin cambios adicionales de permisos: se conservan `crm.bitacora.read` y `crm.bitacora.read-all`.
+- Auth 1.9.1 → 1.9.2; CRM 1.28.1 → 1.28.2; Web 1.48.2 → 1.48.3; ecosistema 1.48.2 → 1.48.3. CI y staging pendientes; producción no autorizada.
+
 ## [1.9.1] - 2026-11-13
 
 - PATCH DH-20261113-CRM-COMMERCIAL-LOG-FILTER-133: sincronización universal de versionamiento para completar el release de Bitácora CRM (filtros de tipo visibles desde el primer acceso) tras la integración inicial 131, sin nuevas mutaciones en permisos o contratos del servicio.
