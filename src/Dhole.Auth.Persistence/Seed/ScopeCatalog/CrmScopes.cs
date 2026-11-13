@@ -28,6 +28,8 @@ internal static class CrmScopes
         ScopeCatalog.Create("crm.opportunity.update", "CRM · Oportunidades · Editar", "Permiso específico de CRM: crm.opportunity.update."),
         ScopeCatalog.Create("crm.quote.read", "CRM · Cotizaciones · Consultar", "Permite consultar cotizaciones vinculadas a oportunidades autorizadas de CRM y Pricing."),
         ScopeCatalog.Create("crm.quote.link", "CRM · Cotizaciones · Vincular", "Permite vincular cotizaciones de Pricing a oportunidades autorizadas de CRM."),
+        ScopeCatalog.Create("crm.bitacora.read", "CRM · Bitácora comercial · Consultar asignados", "Permite consultar actividades completadas de las cuentas y prospectos autorizados; no concede permisos de agenda."),
+        ScopeCatalog.Create("crm.bitacora.read-all", "CRM · Bitácora comercial · Consultar todas", "Permite consultar bitácoras completadas de todos los responsables sobre cuentas y prospectos autorizados; no concede permisos de edición."),
         ScopeCatalog.Create("crm.activity.read", "CRM · Actividades · Consultar", "Permiso específico de CRM: crm.activity.read."),
         ScopeCatalog.Create("crm.activity.read-all", "CRM · Actividades · Consultar todas las agendas", "Permite consultar actividades de todos los vendedores y asignar responsables autorizados."),
         ScopeCatalog.Create("crm.activity.create", "CRM · Actividades · Crear", "Permiso específico de CRM: crm.activity.create."),

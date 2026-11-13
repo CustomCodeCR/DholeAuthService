@@ -26,6 +26,24 @@ public sealed class CrmEffectivePermissionTests
     }
 
     [TestMethod]
+    public async Task CommercialLogScopes_RequireExplicitGrant_OrSuperUserRole()
+    {
+        var active = new[] { "crm.bitacora.read", "crm.bitacora.read-all", "crm.activity.read" };
+        var user = Guid.NewGuid();
+        var seller = new FakePermissionsRepository(
+            new UserPermissionData(user, true, false, ["Vendedor"], ["crm.bitacora.read"], []), active);
+        var sellerScopes = await new EffectivePermissionService(seller).GetAsync(user);
+        CollectionAssert.Contains(sellerScopes.EffectiveScopes.ToArray(), "crm.bitacora.read");
+        CollectionAssert.DoesNotContain(sellerScopes.EffectiveScopes.ToArray(), "crm.bitacora.read-all");
+
+        var super = new FakePermissionsRepository(
+            new UserPermissionData(user, true, false, [AuthConstants.SystemRoles.SuperUser], [], []), active);
+        var global = await new EffectivePermissionService(super).GetAsync(user);
+        CollectionAssert.Contains(global.EffectiveScopes.ToArray(), "crm.bitacora.read");
+        CollectionAssert.Contains(global.EffectiveScopes.ToArray(), "crm.bitacora.read-all");
+    }
+
+    [TestMethod]
     public async Task ActiveSuperUser_ReceivesCrmQuotationScopes_WithoutDirectGrants()
     {
         var user = Guid.NewGuid();
