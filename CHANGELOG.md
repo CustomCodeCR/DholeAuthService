@@ -1,3 +1,13 @@
+## [1.9.1] - 2026-11-13
+
+- PATCH DH-20261113-CRM-COMMERCIAL-LOG-FILTER-133: sincronización de versión de Auth/CRM con el ajuste del filtro de tipos de Bitácora de Web; sin cambios adicionales de permisos o contratos. Mantiene REST, realtime y ACL.
+- Auth 1.9.0 → 1.9.1; CRM 1.28.0 → 1.28.1; Web 1.48.0 → 1.48.2; global 1.48.2. Producción no autorizada.
+
+## [1.9.0] - 2026-11-13
+
+- MINOR DH-20261113-CRM-COMMERCIAL-LOG-131: scopes `crm.bitacora.read` y `crm.bitacora.read-all` para consultar registros comerciales completados, con ACL por responsable, cuenta y prospecto; compatibilidad con `crm.activity.read`.
+- Auth 1.8.1 → 1.9.0; CRM 1.27.4 → 1.28.0; Web 1.47.4 → 1.48.0; ecosistema 1.48.0. Producción no autorizada.
+
 ## [1.8.1] - 2026-11-11
 
 - PATCH DH-20261111-CRM-RESPONSIBLES-SCOPES-086: directorio de responsables CRM filtrado por scopes efectivos crm.activity.read, crm.activity.read-all o crm.followup.manage, incluyendo permisos directos, roles activos y SuperUsuario, sin exigir rol Vendedor.
