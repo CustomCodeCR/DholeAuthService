@@ -1,3 +1,8 @@
+## [1.9.0] - 2026-11-13
+
+- MINOR DH-20261113-CRM-COMMERCIAL-LOG-131: scopes `crm.bitacora.read` y `crm.bitacora.read-all` para lectura de actividades comerciales completadas con ACL por vendedor, cliente y prospecto. Compatibilidad con `crm.activity.read` y `crm.activity.read-all` existentes; no se autoconceden permisos elevados.
+- Auth 1.8.1 → 1.9.0; CRM 1.27.4 → 1.28.0; Web 1.47.4 → 1.48.0; ecosistema → 1.48.0. CI/staging pendientes, producción no autorizada.
+
 ## [1.8.1] - 2026-11-11
 
 - PATCH DH-20261111-CRM-RESPONSIBLES-SCOPES-086: el directorio interno de responsables CRM filtra usuarios internos activos por crm.activity.read, crm.activity.read-all o crm.followup.manage, incluyendo permisos directos, heredados de roles activos y superusuarios. Ya no depende del nombre del rol Vendedor.
