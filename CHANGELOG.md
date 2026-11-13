@@ -1,3 +1,8 @@
+## [1.9.3] - 2026-11-13
+
+- PATCH DH-20261113-PRODUCTION-DEPLOY-SKIP-135: elimina la condición de exclusión por mensaje del job de producción. Push a master y ejecución manual activan el despliegue estándar de Auth; se conservan CI, Docker y health.
+- Release coordinado: Auth 1.9.2 → 1.9.3, CRM 1.28.2 → 1.28.3, Web 1.48.3 → 1.48.4 y ecosistema 1.48.3 → 1.48.4. CI y staging antes de promover a producción. Usuario autorizó corregir y publicar el 2026-11-13.
+
 ## [1.9.2] - 2026-11-13
 
 - PATCH DH-20261113-CRM-COMMERCIAL-LOG-ACL-134: release coordinado que asegura visibilidad de prospectos en Bitácora CRM. Se conservan scopes `crm.bitacora.read` y `crm.bitacora.read-all`, sin ampliar permisos.
