@@ -21,7 +21,7 @@ env:
 
 jobs:
   deploy:
-    if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, 'DH-20261113-CRM-COMMERCIAL-LOG-131 [no-prod]') && !contains(github.event.head_commit.message, 'DH-20261113-CRM-COMMERCIAL-LOG-FILTER-133 [no-prod]') }}
+    if: ${{ github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, 'DH-20261113-CRM-COMMERCIAL-LOG-131 [no-prod]') && !contains(github.event.head_commit.message, 'DH-20261113-CRM-COMMERCIAL-LOG-FILTER-133 [no-prod]') && !contains(github.event.head_commit.message, 'DH-20261113-CRM-COMMERCIAL-LOG-ACL-134 [no-prod]') }}
     runs-on: [self-hosted, linux, x64, dhole]
     steps:
       - name: Checkout service
