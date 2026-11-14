@@ -1,3 +1,8 @@
+## [1.10.0] - 2026-11-14 (API Manager REST inventory)
+
+- MINOR: inventario de rutas Auth protegido por scope de integraciones, sin cambiar autenticación ni permisos.
+- Ecosistema 1.56.0.
+
 ## [1.9.3] - 2026-11-13
 
 - PATCH DH-20261113-PRODUCTION-DEPLOY-SKIP-135: elimina la condición de exclusión por mensaje del job de producción. Push a master y ejecución manual activan el despliegue estándar de Auth; se conservan CI, Docker y health.
