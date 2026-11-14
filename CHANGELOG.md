@@ -1,3 +1,8 @@
+## [1.10.0] - 2026-11-14 (Dhole API Manager universal route discovery)
+
+- Permite inventariar rutas REST registradas de Auth mediante un endpoint interno protegido por autenticación y scope `integrations.thirdparty.manage`.
+- La consulta de rutas no las publica ni cambia los permisos existentes.
+
 ## [1.9.3] - 2026-11-13
 
 - PATCH DH-20261113-PRODUCTION-DEPLOY-SKIP-135: release coordinado para habilitar el job de producción de Auth en master; la rama develop ya carecía de exclusiones por mensaje de commit. Se preservan Docker, health, REST y realtime.
