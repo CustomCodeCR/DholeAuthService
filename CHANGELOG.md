@@ -1,3 +1,8 @@
+## [1.10.0] - 2026-11-14 (API Manager discovery)
+
+- MINOR: endpoint de inventario de rutas Auth protegido por JWT y permiso integrations.thirdparty.manage; sin publicación pública ni permisos adicionales.
+- Release global Dhole 1.56.0, no modifica login ni sesiones.
+
 ## [1.9.3] - 2026-11-13
 
 - PATCH DH-20261113-PRODUCTION-DEPLOY-SKIP-135: release coordinado para habilitar el job de producción de Auth en master; la rama develop ya carecía de exclusiones por mensaje de commit. Se preservan Docker, health, REST y realtime.
