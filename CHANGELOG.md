@@ -1,3 +1,7 @@
+## [1.10.0] - 2026-11-14 (API Manager Route Discovery 143)
+
+- Adds JWT-protected runtime endpoint inventory for Dhole API Manager; preserves existing API behavior and permissions.
+
 ## [1.9.3] - 2026-11-13
 
 - PATCH DH-20261113-PRODUCTION-DEPLOY-SKIP-135: elimina la condición de exclusión por mensaje del job de producción. Push a master y ejecución manual activan el despliegue estándar de Auth; se conservan CI, Docker y health.
