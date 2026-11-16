@@ -1,3 +1,8 @@
+## [1.13.0] - 2026-11-16 (SRM banking permissions · master backport)
+
+- MINOR DH-20261116-SRM-SUPPLIER-FINANCE-176: scopes explícitos `srm.supplier.bank.read` y `srm.supplier.bank.manage` para lectura y modificación restringida de cuentas bancarias del proveedor. Release coordinado con Config 1.8.0, Web 1.63.0 y System 1.64.0.
+- Backport a master de funcionalidades SRM revisadas y compiladas en staging; autorización de producción otorgada expresamente el 16 de noviembre de 2026.
+
 ## [1.11.0] - 2026-11-16 (Permisos independientes LCL propios)
 
 - MINOR DH-20261116-OWN-LCL-SCOPES-163: separa pricing.own-lcl-consolidation.create, .update y .view para asignación independiente mediante Auth; el permiso create ya no describe autorización de edición o lectura.
