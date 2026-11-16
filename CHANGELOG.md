@@ -1,3 +1,8 @@
+## [1.13.0] - 2026-11-16
+### Added
+- Permisos explícitos `srm.supplier.bank.read` y `srm.supplier.bank.manage` para proteger la lectura y modificación de las cuentas bancarias del SRM.
+- Release coordinado DH-20261116-SRM-SUPPLIER-FINANCE-176 (ecosistema 1.64.0); integración y staging pendientes.
+
 ## [1.12.0] - 2026-11-16 (Inventario protegido para API Manager)
 
 - MINOR DH-20261116-API-ROUTES-DEFAULTS-165: expone catálogo runtime de rutas del servicio por JWT con scope integrations.thirdparty.manage; no habilita operaciones externas ni requiere Swagger en producción.
