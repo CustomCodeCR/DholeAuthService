@@ -1,3 +1,8 @@
+## [1.12.0] - 2026-11-16 (Inventario protegido para API Manager)
+
+- MINOR DH-20261116-API-ROUTES-DEFAULTS-165: expone catálogo runtime de rutas del servicio por JWT con scope integrations.thirdparty.manage; no habilita operaciones externas ni requiere Swagger en producción.
+- Conserva autorización existente y oculta rutas internas, credenciales y health.
+
 ## [1.11.0] - 2026-11-16 (Permisos independientes LCL propios)
 
 - MINOR DH-20261116-OWN-LCL-SCOPES-163: separa pricing.own-lcl-consolidation.create, .update y .view para asignación independiente mediante Auth; el permiso create ya no describe autorización de edición o lectura.
