@@ -1,3 +1,7 @@
+## [1.12.0] - 2026-11-16 (Inventario HTTP protegido en producción)
+
+- MINOR DH-20261116-API-ROUTES-DEFAULTS-165: habilita inventario runtime protegido por integrations.thirdparty.manage, compatible con Gateway y sin dependencia de Swagger de desarrollo. No publica operaciones de usuarios ni cambia scopes de negocio.
+
 ## [1.11.0] - 2026-11-16 (Permisos independientes LCL propios)
 
 - MINOR DH-20261116-OWN-LCL-SCOPES-163: separa pricing.own-lcl-consolidation.create, .update y .view para asignación independiente mediante Auth; el permiso create ya no describe autorización de edición o lectura.
