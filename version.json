@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "ecosystem": "Dhole",
   "component": "DholeAuthService",
-  "version": "1.11.0",
-  "ecosystemVersion": "1.62.0",
-  "releaseId": "DH-20261116-OWN-LCL-SCOPES-163",
-  "businessReleaseId": "DH-20261116-OWN-LCL-SCOPES-163",
-  "releaseStatus": "candidate-ci-and-staging-pending"
+  "version": "1.13.0",
+  "ecosystemVersion": "1.64.0",
+  "releaseId": "DH-20261116-SRM-SUPPLIER-FINANCE-176",
+  "businessReleaseId": "DH-20261116-SRM-SUPPLIER-FINANCE-176",
+  "releaseStatus": "candidate-master-ci-pending"
 }

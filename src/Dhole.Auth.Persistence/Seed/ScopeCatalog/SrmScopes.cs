@@ -7,6 +7,8 @@ internal static class SrmScopes
         ScopeCatalog.Create("srm.supplier.read", "SRM · Proveedores · Consultar", "Permiso específico de SRM: srm.supplier.read."),
         ScopeCatalog.Create("srm.supplier.create", "SRM · Proveedores · Crear", "Permiso específico de SRM: srm.supplier.create."),
         ScopeCatalog.Create("srm.supplier.update", "SRM · Proveedores · Editar", "Permiso específico de SRM: srm.supplier.update."),
+        ScopeCatalog.Create("srm.supplier.bank.read", "SRM · Proveedores · Ver cuentas bancarias", "Acceso sensible a cuentas bancarias de proveedores."),
+        ScopeCatalog.Create("srm.supplier.bank.manage", "SRM · Proveedores · Administrar cuentas bancarias", "Crear y actualizar cuentas bancarias de proveedores; acceso sensible."),
         ScopeCatalog.Create("srm.supplier.archive", "SRM · Proveedores · Archivar", "Permiso específico de SRM: srm.supplier.archive."),
         ScopeCatalog.Create("srm.performance.read", "SRM · Evaluaciones · Consultar", "Permiso específico de SRM: srm.performance.read."),
         ScopeCatalog.Create("srm.performance.manage", "SRM · Evaluaciones · Administrar", "Permiso específico de SRM: srm.performance.manage."),
