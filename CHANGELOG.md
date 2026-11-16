@@ -1,3 +1,9 @@
+## [1.11.0] - 2026-11-16 (Permisos independientes LCL propios)
+
+- MINOR DH-20261116-OWN-LCL-SCOPES-163: separa pricing.own-lcl-consolidation.create, .update y .view para asignación independiente mediante Auth; el permiso create ya no describe autorización de edición o lectura.
+- Los nuevos scopes se incorporan al seed idempotente sin otorgar privilegios operativos automáticamente a todos los roles. La administración de roles y usuarios existente permite asignarlos.
+- Auth 1.9.3 → 1.11.0; Pricing 1.21.0; Web 1.61.0; global 1.62.0.
+
 ## [1.9.3] - 2026-11-13
 
 - PATCH DH-20261113-PRODUCTION-DEPLOY-SKIP-135: elimina la condición de exclusión por mensaje del job de producción. Push a master y ejecución manual activan el despliegue estándar de Auth; se conservan CI, Docker y health.
