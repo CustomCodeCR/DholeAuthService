@@ -1,0 +1,22 @@
+{
+  "releaseId": "DH-20261116-OWN-LCL-SCOPES-163",
+  "date": "2026-11-16",
+  "releaseType": "MINOR",
+  "ecosystemVersion": "1.62.0",
+  "components": {
+    "DholeAuthService": "1.11.0",
+    "DholePricingService": "1.21.0",
+    "DholeWeb": "1.61.0",
+    "DholeSystem": "1.62.0"
+  },
+  "scopeCodes": [
+    "pricing.own-lcl-consolidation.create",
+    "pricing.own-lcl-consolidation.update",
+    "pricing.own-lcl-consolidation.view"
+  ],
+  "validation": {
+    "ci": "pending",
+    "staging": "pending"
+  },
+  "productionDeploymentAuthorized": false
+}

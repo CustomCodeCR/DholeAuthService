@@ -1,3 +1,9 @@
+## [1.11.0] - 2026-11-16 (Permisos independientes LCL propios)
+
+- MINOR DH-20261116-OWN-LCL-SCOPES-163: separa pricing.own-lcl-consolidation.create, .update y .view para asignación independiente mediante Auth; el permiso create ya no describe autorización de edición o lectura.
+- Los nuevos scopes se incorporan al seed idempotente sin otorgar privilegios operativos automáticamente a todos los roles. La administración de roles y usuarios existente permite asignarlos.
+- Auth 1.10.0 → 1.11.0; Pricing 1.21.0; Web 1.61.0; global 1.62.0.
+
 ## [1.10.0] - 2026-11-14 (API Manager discovery)
 
 - MINOR: endpoint de inventario de rutas Auth protegido por JWT y permiso integrations.thirdparty.manage; sin publicación pública ni permisos adicionales.
