@@ -19,5 +19,6 @@ internal static class AuthScopeCatalog
             .. ThirdPartyScopes.All,
             .. CrmScopes.All,
             .. SrmScopes.All,
+            .. OperationsScopes.All,
         ];
 }
