@@ -1,4 +1,5 @@
 using Dhole.Auth.Api.Authorization;
+using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Domain.Users.Enums;
 using Dhole.Auth.Persistence.DbContexts;
 using Microsoft.EntityFrameworkCore;
@@ -35,13 +36,17 @@ public static class OperationsUserDirectoryEndpoints
         }).RequireScope("operations.team.manage");
 
         api.MapGet("/{userId:guid}/operations-eligibility", async (
-            Guid userId, ServiceDbContext db, CancellationToken ct) =>
+            Guid userId, ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct) =>
         {
             var user = await db.Users.AsNoTracking()
                 .Where(u => u.Id == userId && !u.IsDeleted && u.IsActive && !u.IsLocked &&
                     u.UserType == UserType.Internal)
                 .Select(u => new { u.Id, u.DisplayName, u.UserName }).SingleOrDefaultAsync(ct);
-            return user is null ? Results.NotFound() : Results.Ok(user);
+            if (user is null) return Results.NotFound();
+            var effective = await permissions.GetAsync(userId, ct);
+            var canReviewAperturas = effective.EffectiveScopes.Contains(
+                "operations.aperture.validation.review", StringComparer.OrdinalIgnoreCase);
+            return Results.Ok(new { user.Id, user.DisplayName, user.UserName, canReviewAperturas });
         }).RequireScope("operations.team.manage");
         return app;
     }
