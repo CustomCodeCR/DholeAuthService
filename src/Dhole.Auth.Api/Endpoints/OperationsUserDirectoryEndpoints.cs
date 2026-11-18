@@ -44,8 +44,11 @@ public static class OperationsUserDirectoryEndpoints
                 .Select(u => new { u.Id, u.DisplayName, u.UserName }).SingleOrDefaultAsync(ct);
             if (user is null) return Results.NotFound();
             var effective = await permissions.GetAsync(userId, ct);
-            var canReviewAperturas = effective.EffectiveScopes.Contains(
-                "operations.aperture.validation.review", StringComparer.OrdinalIgnoreCase);
+            var canReviewAperturas =
+                effective.EffectiveScopes.Contains("operations.aperture.validation.review",
+                    StringComparer.OrdinalIgnoreCase) &&
+                effective.EffectiveScopes.Contains("operations.case.read",
+                    StringComparer.OrdinalIgnoreCase);
             return Results.Ok(new { user.Id, user.DisplayName, user.UserName, canReviewAperturas });
         }).RequireScope("operations.team.manage");
         return app;
