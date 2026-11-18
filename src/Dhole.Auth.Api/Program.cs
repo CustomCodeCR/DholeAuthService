@@ -81,6 +81,7 @@ app.UseMiddleware<AuditEndpointMiddleware>();
 
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
+app.MapOperationsUserDirectoryEndpoints();
 app.MapRoleEndpoints();
 app.MapScopeEndpoints();
 app.MapSessionEndpoints();
