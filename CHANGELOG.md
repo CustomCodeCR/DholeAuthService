@@ -1,3 +1,9 @@
+## [1.14.0] - 2026-11-17 (DH-20261117-OPS-DUAL-VALIDATION-208 · Auth Operations)
+
+- MINOR: scopes Operations disponibles para asignación manual en Auth, sin crear cuentas, membresías ni grants nominales automáticos.
+- Directorio de usuarios internos activos y consulta de elegibilidad protegidas con operations.team.manage; sin secretos ni datos de contacto.
+- Auth 1.13.0 → 1.14.0; global 1.77.1 → 1.78.0.
+
 ## [1.13.0] - 2026-11-16 (SRM banking permissions · master backport)
 
 - MINOR DH-20261116-SRM-SUPPLIER-FINANCE-176: scopes explícitos `srm.supplier.bank.read` y `srm.supplier.bank.manage` para lectura y modificación restringida de cuentas bancarias del proveedor. Release coordinado con Config 1.8.0, Web 1.63.0 y System 1.64.0.
