@@ -18,6 +18,7 @@ internal static class OperationsScopes
         ScopeCatalog.Create("operations.internal-note.create", "Operations · internal-note.create", "Permiso Operations: operations.internal-note.create."),
         ScopeCatalog.Create("operations.carrier.connection.read", "Operations · carrier.connection.read", "Permiso Operations: operations.carrier.connection.read."),
         ScopeCatalog.Create("operations.carrier.connection.manage", "Operations · carrier.connection.manage", "Permiso Operations: operations.carrier.connection.manage."),
+        ScopeCatalog.Create("operations.audit.read", "Operations · auditoría · Consultar", "Permite leer el historial de equipos y expedientes de Operations. No concede permisos de modificación."),
         ScopeCatalog.Create("operations.realtime.read", "Operations · realtime.read", "Permiso Operations: operations.realtime.read."),
     ];
 }
