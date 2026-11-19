@@ -1,7 +1,7 @@
-## [1.16.1] - 2026-11-19 (DH-20261119-OPS-ROLE-NAME-248 · rol existente de operaciones)
+## [1.16.1] - 2026-11-19 (DH-20261119-OPS-ROLE-NAME-249 · rol existente de operaciones)
 
 - PATCH: filtro de asignación de equipos reconoce exactamente el rol vigente «Operativo Logístico», junto con «Supervisor Operativo». No crea ni asigna roles ni modifica scopes.
-- Prueba de regresión para ambos nombres; versión de ecosistema 1.91.1 coordinada con System y Web.
+- Prueba de regresión para ambos nombres; versión de ecosistema 1.92.1 coordinada con System y Web.
 
 ## [1.16.0] - 2026-11-19 (DH-20261119-OPS-AUDIT-ROLE-247 · Operaciones, auditoría y roles)
 
