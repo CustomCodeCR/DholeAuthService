@@ -1,3 +1,9 @@
+## [1.16.2] - 2026-11-19 (DH-20261119-OPS-TEAM-BULK-251 · Selección múltiple de equipos)
+
+- PATCH: el directorio de usuarios de Operations reconoce los nombres históricos «Operativo Logisitico» y «Operativo Logistico» además de «Operativo Logístico» y «Supervisor Operativo»; no crea roles ni amplía permisos a otras áreas.
+- Prueba de regresión para las variantes exactas del rol.
+- DholeAuthService 1.16.1 → 1.16.2; ecosistema 1.94.0. Release coordinado con Auth, Operations, Web y System. CI y staging pendientes.
+
 ## [1.16.1] - 2026-11-19 (DH-20261119-OPS-ROLE-NAME-249 · rol existente de operaciones)
 
 - PATCH: filtro de asignación de equipos reconoce exactamente el rol vigente «Operativo Logístico», junto con «Supervisor Operativo». No crea ni asigna roles ni modifica scopes.
