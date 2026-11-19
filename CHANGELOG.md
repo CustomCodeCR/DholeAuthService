@@ -1,3 +1,10 @@
+## [1.15.0] - 2026-11-19 (DH-20261119-OPERATIONS-SCOPES-CONTEXT-246 · Auth scopes y contexto empresarial Operations)
+
+- MINOR: Operations muestra los 16 scopes con nombres explícitos en español y descripciones específicas en Auth; se conservan intactos los códigos existentes.
+- Crea roles Operaciones · Administrador de equipos, Validador de Aperturas y Coordinación Origen con permisos mínimos, sin inscribir ni modificar usuarios automáticamente.
+- Seed idempotente en Auth; los scopes se asignan manualmente a usuarios mediante roles existentes y las cachés de permisos se invalidan al reconciliarlos.
+- DholeAuthService 1.14.0 → 1.15.0; ecosistema 1.78.0 → 1.90.0. Release coordinado con DholeOperationsService. CI/staging pendientes; producción no autorizada.
+
 ## [1.14.0] - 2026-11-17 (DH-20261117-OPS-DUAL-VALIDATION-208 · Auth Operations)
 
 - MINOR: scopes Operations disponibles para asignación manual en Auth, sin crear cuentas, membresías ni grants nominales automáticos.
