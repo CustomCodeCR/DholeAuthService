@@ -32,10 +32,31 @@ public sealed class OperationsScopeCatalogTests
     }
 
     [TestMethod]
-    public void StartupIncludesManualOperationsRoleCatalog()
+    public void RolePoolOnlyContainsTheTwoApprovedLogisticsRoles()
     {
+        CollectionAssert.AreEquivalent(
+            new[] { "Operador Logístico", "Supervisor Operativo" },
+            OperationsRolePolicy.AssignmentEligible);
+    }
+
+    [TestMethod]
+    public void StartupRetiresOnlyTheSevenUnrequestedRoles()
+    {
+        CollectionAssert.AreEquivalent(
+            new[] {
+                "Dynamics", "Dynamics Seguridad",
+                "Operaciones · Administrador de equipos",
+                "Operaciones · Validador de Aperturas",
+                "Operaciones · Coordinación Origen",
+                "Vendedor Jefe", "Vendedor Supervisor",
+            },
+            OperationsRolePolicy.DeprecatedAutoCreated);
         var seeder = typeof(DatabaseSeeder);
-        Assert.IsNotNull(seeder.GetMethod("EnsureOperationsRolesAsync",
+        Assert.IsNotNull(seeder.GetMethod("RetireUnrequestedAutoCreatedRolesAsync",
+            BindingFlags.NonPublic | BindingFlags.Instance));
+        Assert.IsNull(seeder.GetMethod("EnsureOperationsRolesAsync",
+            BindingFlags.NonPublic | BindingFlags.Instance));
+        Assert.IsNull(seeder.GetMethod("EnsureDynamicsAdministrationRolesAsync",
             BindingFlags.NonPublic | BindingFlags.Instance));
     }
 }
