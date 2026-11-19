@@ -45,6 +45,24 @@ public static class OperationsUserDirectoryEndpoints
             });
         }).RequireScope("operations.team.manage");
 
+        // Audit activity may be performed by SuperUsuarios who are not eligible
+        // as operational team members. Resolve only audited actors' display names
+        // through a separate, permission-gated read-only API.
+        api.MapGet("/operations-audit-actors", async (
+            string? ids, ServiceDbContext db, CancellationToken ct) =>
+        {
+            var segments = (ids ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries);
+            if (segments.Length == 0 || segments.Length > 100 ||
+                segments.Any(id => !Guid.TryParse(id, out var parsed) || parsed == Guid.Empty))
+                return Results.BadRequest(new { code = "INVALID_AUDIT_ACTOR_IDS" });
+            var actorIds = segments.Select(Guid.Parse).Distinct().ToArray();
+            var items = await db.Users.AsNoTracking()
+                .Where(u => actorIds.Contains(u.Id) && u.UserType == UserType.Internal)
+                .Select(u => new { u.Id, u.DisplayName, u.UserName })
+                .ToArrayAsync(ct);
+            return Results.Ok(new { items });
+        }).RequireScope("operations.audit.read");
+
         api.MapGet("/{userId:guid}/operations-eligibility", async (
             Guid userId, ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct) =>
         {
