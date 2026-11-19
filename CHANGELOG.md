@@ -1,3 +1,8 @@
+## [1.16.1] - 2026-11-19 (DH-20261119-OPS-ROLE-NAME-248 · rol logístico existente)
+
+- PATCH: Auth filtra correctamente al usuario con el rol existente «Operativo Logístico», junto con «Supervisor Operativo». No se crean roles ni se otorgan scopes automáticamente.
+- Corrige la prueba de regresión y actualiza el ecosistema 1.91.1 con Web/System.
+
 ## [1.16.0] - 2026-11-19 (DH-20261119-OPS-AUDIT-ROLE-247 · Operaciones, auditoría y roles)
 
 - MINOR: directorio y elegibilidad de equipos restringidos a usuarios internos activos con rol Operador Logístico o Supervisor Operativo; nombres de auditores consultables con operations.audit.read. Retira exactamente siete roles automáticos no solicitados, sus membresías y cachés, mediante baja lógica/auditoría. Scopes originales y demás roles conservados.
