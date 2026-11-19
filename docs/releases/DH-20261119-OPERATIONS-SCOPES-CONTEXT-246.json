@@ -1,0 +1,46 @@
+{
+  "releaseId": "DH-20261119-OPERATIONS-SCOPES-CONTEXT-246",
+  "businessReleaseId": "DH-20261119-OPERATIONS-SCOPES-CONTEXT-246",
+  "ecosystem": "Dhole",
+  "ecosystemVersion": "1.90.0",
+  "releaseType": "MINOR",
+  "relatedComponents": [
+    {
+      "component": "DholeAuthService",
+      "previousVersion": "1.14.0",
+      "version": "1.15.0"
+    },
+    {
+      "component": "DholeOperationsService",
+      "previousVersion": "0.8.0",
+      "version": "0.9.0"
+    }
+  ],
+  "changes": [
+    "Auth Operations scopes visible with consistent Spanish names; original scope codes unchanged",
+    "Three explicitly assignable Operations roles in Auth: team admin, Aperturas reviewer and Origin coordinator; no user memberships auto-assigned",
+    "Auth scope seed remains idempotent; existing SuperUsuario role keeps active scopes",
+    "Operations resolves a unique persisted company for internal JWTs lacking company_id, fails closed if multiple tenants exist",
+    "Privileged first-time initialization creates a persistent company workspace only on an empty Operations database, with audit and Outbox",
+    "Existing team CRUD, double validation, Auth eligibility, REST and SignalR kept compatible"
+  ],
+  "security": {
+    "scopeForTeams": "operations.team.manage",
+    "scopeForAudit": "operations.audit.read",
+    "readCases": "operations.case.read",
+    "review": "operations.aperture.validation.review",
+    "assignReviewers": "operations.aperture.validation.assign",
+    "noAutomaticUserGrants": true,
+    "multiTenantFallback": "fail closed"
+  },
+  "releaseBranch": "feature/20261119-operations-scopes-company-context",
+  "mergeSequence": "develop -> staging -> master same release",
+  "production": "not-approved",
+  "validation": {
+    "ci": "pending",
+    "staging": "pending",
+    "unit": "pending",
+    "production": "not-approved"
+  },
+  "component": "DholeAuthService"
+}
