@@ -1,0 +1,73 @@
+{
+  "releaseId": "DH-20261119-OPS-AUDIT-ROLE-247",
+  "businessReleaseId": "DH-20261119-OPS-AUDIT-ROLE-247",
+  "ecosystem": "Dhole",
+  "ecosystemVersion": "1.91.0",
+  "type": "MINOR",
+  "date": "2026-11-19",
+  "components": [
+    {
+      "repository": "CustomCodeCR/DholeAuthService",
+      "component": "DholeAuthService",
+      "from": "1.15.0",
+      "to": "1.16.0",
+      "branch": "feature/20261119-operations-role-eligibility-cleanup"
+    },
+    {
+      "repository": "CustomCodeCR/DholeOperationsService",
+      "component": "DholeOperationsService",
+      "from": "0.9.0",
+      "to": "0.10.0",
+      "branch": "feature/20261119-operations-role-eligibility-cleanup"
+    },
+    {
+      "repository": "CustomCodeCR/DholeWeb",
+      "component": "DholeWeb",
+      "from": "1.89.0",
+      "to": "1.91.0",
+      "branch": "feature/20261119-operations-audit-timeline-ux"
+    },
+    {
+      "repository": "CustomCodeCR/DholeSystem",
+      "component": "DholeSystem",
+      "from": "1.89.0",
+      "to": "1.91.0",
+      "branch": "feature/20261119-operations-audit-role-release"
+    }
+  ],
+  "scopeChanges": "No scope code removals. Team membership eligibility is role-gated in Auth and Operations.",
+  "roles": {
+    "allowedTeamMembers": [
+      "Operador Logístico",
+      "Supervisor Operativo"
+    ],
+    "retiredExactly": [
+      "Dynamics",
+      "Dynamics Seguridad",
+      "Operaciones · Administrador de equipos",
+      "Operaciones · Validador de Aperturas",
+      "Operaciones · Coordinación Origen",
+      "Vendedor Jefe",
+      "Vendedor Supervisor"
+    ],
+    "retirementPolicy": "Soft-delete exact-match roles with RoleDeleted audit Outbox, revoke memberships and invalidate caches; retain scopes and unrelated roles."
+  },
+  "audit": {
+    "eventCodesPreserved": true,
+    "actorNameLookup": "operations.audit.read",
+    "UI": "shared localized timeline with diff and technical details"
+  },
+  "safety": {
+    "restCompatibility": true,
+    "signalRCompatibility": true,
+    "outboxAudit": true,
+    "tenantIsolation": true
+  },
+  "integration": {
+    "develop": "pending",
+    "staging": "pending",
+    "master": "pending",
+    "productionAuthorizedByUser": true
+  },
+  "component": "DholeAuthService"
+}
