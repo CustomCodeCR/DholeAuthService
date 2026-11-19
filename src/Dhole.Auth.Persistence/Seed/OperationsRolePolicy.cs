@@ -8,7 +8,13 @@ public static class OperationsRolePolicy
 {
     public const string Operator = "Operativo Logístico";
     public const string Supervisor = "Supervisor Operativo";
-    public static readonly string[] AssignmentEligible = [Operator, Supervisor];
+    // Auth contains older manually created roles with the spelling "Logisitico".
+    // These exact legacy aliases refer to the same approved logistics operator role;
+    // no other department, Dynamics, sales or generic admin roles are admitted.
+    public const string OperatorLegacyTypo = "Operativo Logisitico";
+    public const string OperatorWithoutAccent = "Operativo Logistico";
+    public static readonly string[] AssignmentEligible =
+        [Operator, OperatorLegacyTypo, OperatorWithoutAccent, Supervisor];
 
     // Only these seven formerly auto-seeded roles may be retired.
     // Keep their scopes and all other manually configured roles unchanged.
