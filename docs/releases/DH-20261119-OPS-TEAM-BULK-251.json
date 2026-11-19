@@ -1,0 +1,61 @@
+{
+  "releaseId": "DH-20261119-OPS-TEAM-BULK-251",
+  "ecosystem": "Dhole",
+  "ecosystemVersion": "1.94.0",
+  "type": "MINOR",
+  "released": false,
+  "branch": "feature/20261119-operations-multi-assignment-role-alias-251",
+  "components": [
+    {
+      "repo": "DholeAuthService",
+      "from": "1.16.1",
+      "to": "1.16.2"
+    },
+    {
+      "repo": "DholeOperationsService",
+      "from": "0.10.0",
+      "to": "0.11.0"
+    },
+    {
+      "repo": "DholeWeb",
+      "from": "1.93.0",
+      "to": "1.94.0"
+    },
+    {
+      "repo": "DholeSystem",
+      "from": "1.93.0",
+      "to": "1.94.0"
+    }
+  ],
+  "features": [
+    "Auth matches historical role alias Operativo Logisitico and correct Operativo Logístico without accepting non-operations roles",
+    "New idempotent batch team-members endpoint verifies each employee before a single atomic save with individual AuditLogs records",
+    "Web uses DhMultiSelect and discovers Auth eligible employees across pages",
+    "Editing existing member preserves single-member controls"
+  ],
+  "security": {
+    "scope": "operations.team.manage",
+    "allowedRoles": [
+      "Operativo Logístico",
+      "Operativo Logisitico",
+      "Operativo Logistico",
+      "Supervisor Operativo"
+    ],
+    "noGrants": true,
+    "multiTenantIsolation": true
+  },
+  "validation": {
+    "ci": "pending",
+    "staging": "pending",
+    "authRealUsers": "pending",
+    "production": "not-deployed"
+  },
+  "mergeOrder": [
+    "Auth",
+    "Operations",
+    "System",
+    "Web"
+  ],
+  "delivery": "develop staging then selective master promotion",
+  "component": "DholeAuthService"
+}
