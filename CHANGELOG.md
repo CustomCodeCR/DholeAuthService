@@ -1,3 +1,8 @@
+## [1.16.0] - 2026-11-19 (DH-20261119-OPS-AUDIT-ROLE-247 · Operaciones, auditoría y roles)
+
+- MINOR: directorio y elegibilidad de equipos restringidos a usuarios internos activos con rol Operador Logístico o Supervisor Operativo; nombres de auditores consultables con operations.audit.read. Retira exactamente siete roles automáticos no solicitados, sus membresías y cachés, mediante baja lógica/auditoría. Scopes originales y demás roles conservados.
+- Release coordinado DholeWeb/DholeSystem 1.89.0→1.91.0; Auth 1.15.0→1.16.0; Operations 0.9.0→0.10.0. Ecosistema 1.91.0. CI/staging y comprobación de producción obligatorias.
+
 ## [1.15.0] - 2026-11-19 (DH-20261119-OPERATIONS-SCOPES-CONTEXT-246 · Auth scopes y contexto empresarial Operations)
 
 - MINOR: Operations muestra los 16 scopes con nombres explícitos en español y descripciones específicas en Auth; se conservan intactos los códigos existentes.
