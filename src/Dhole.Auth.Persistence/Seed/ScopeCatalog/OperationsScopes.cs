@@ -1,24 +1,35 @@
 namespace Dhole.Auth.Persistence.Seed;
-// Operations users and grants are never seeded; only the catalogue is synchronized.
+
+// Scope definitions are synchronized on Auth startup. Memberships are always assigned explicitly.
 internal static class OperationsScopes
 {
+    public const string TeamManage = "operations.team.manage";
+    public const string CaseRead = "operations.case.read";
+    public const string CaseReadAll = "operations.case.read-all";
+    public const string AuditRead = "operations.audit.read";
+    public const string ApertureAssign = "operations.aperture.validation.assign";
+    public const string ApertureReview = "operations.aperture.validation.review";
+    public const string RealtimeRead = "operations.realtime.read";
+    public const string OriginRead = "operations.origin.read";
+    public const string OriginDepartureConfirm = "operations.origin.departure.confirm";
+
     public static IReadOnlyCollection<ScopeSeedDefinition> All =>
     [
-        ScopeCatalog.Create("operations.case.create", "Operations · case.create", "Permiso Operations: operations.case.create."),
-        ScopeCatalog.Create("operations.case.read", "Operations · case.read", "Permiso Operations: operations.case.read."),
-        ScopeCatalog.Create("operations.case.read-all", "Operations · case.read-all", "Permiso Operations: operations.case.read-all."),
-        ScopeCatalog.Create("operations.team.manage", "Operations · team.manage", "Permiso Operations: operations.team.manage."),
-        ScopeCatalog.Create("operations.assignment.manage", "Operations · assignment.manage", "Permiso Operations: operations.assignment.manage."),
-        ScopeCatalog.Create("operations.aperture.validation.assign", "Operations · aperture.validation.assign", "Permiso Operations: operations.aperture.validation.assign."),
-        ScopeCatalog.Create("operations.aperture.validation.review", "Operations · aperture.validation.review", "Permiso Operations: operations.aperture.validation.review."),
-        ScopeCatalog.Create("operations.document.manage", "Operations · document.manage", "Permiso Operations: operations.document.manage."),
-        ScopeCatalog.Create("operations.origin.read", "Operations · origin.read", "Permiso Operations: operations.origin.read."),
-        ScopeCatalog.Create("operations.origin.departure.confirm", "Operations · origin.departure.confirm", "Permiso Operations: operations.origin.departure.confirm."),
-        ScopeCatalog.Create("operations.internal-note.read", "Operations · internal-note.read", "Permiso Operations: operations.internal-note.read."),
-        ScopeCatalog.Create("operations.internal-note.create", "Operations · internal-note.create", "Permiso Operations: operations.internal-note.create."),
-        ScopeCatalog.Create("operations.carrier.connection.read", "Operations · carrier.connection.read", "Permiso Operations: operations.carrier.connection.read."),
-        ScopeCatalog.Create("operations.carrier.connection.manage", "Operations · carrier.connection.manage", "Permiso Operations: operations.carrier.connection.manage."),
-        ScopeCatalog.Create("operations.audit.read", "Operations · auditoría · Consultar", "Permite leer el historial de equipos y expedientes de Operations. No concede permisos de modificación."),
-        ScopeCatalog.Create("operations.realtime.read", "Operations · realtime.read", "Permiso Operations: operations.realtime.read."),
+        ScopeCatalog.Create("operations.case.create", "Operaciones · Trámites · Crear", "Permite abrir expedientes IDTRA autorizados."),
+        ScopeCatalog.Create(CaseRead, "Operaciones · Trámites · Consultar asignados", "Consulta expedientes donde el usuario participa o está asignado."),
+        ScopeCatalog.Create(CaseReadAll, "Operaciones · Trámites · Consultar todos", "Consulta transversal de expedientes; requiere también operations.case.read."),
+        ScopeCatalog.Create(TeamManage, "Operaciones · Equipos · Administrar integrantes", "Permite configurar equipos y asignar empleados activos desde Auth. No concede scopes a los empleados."),
+        ScopeCatalog.Create("operations.assignment.manage", "Operaciones · Asignaciones · Administrar", "Gestiona la asignación de etapas y responsables autorizados."),
+        ScopeCatalog.Create(ApertureAssign, "Operaciones · Aperturas · Asignar dos validadores", "Selecciona dos revisores diferentes del pool activo."),
+        ScopeCatalog.Create(ApertureReview, "Operaciones · Aperturas · Aprobar o solicitar cambios", "Permite emitir una decisión individual sobre la validación asignada."),
+        ScopeCatalog.Create("operations.document.manage", "Operaciones · Documentos · Administrar", "Registra y gestiona versiones de documentos de expedientes autorizados."),
+        ScopeCatalog.Create(OriginRead, "Operaciones · Coordinación origen · Consultar", "Permite consultar el avance de origen de expedientes autorizados."),
+        ScopeCatalog.Create(OriginDepartureConfirm, "Operaciones · Coordinación origen · Confirmar salida", "Permite confirmar hitos de salida según las reglas operativas."),
+        ScopeCatalog.Create("operations.internal-note.read", "Operaciones · Notas internas · Consultar", "Consulta las notas internas de expedientes autorizados."),
+        ScopeCatalog.Create("operations.internal-note.create", "Operaciones · Notas internas · Crear", "Agrega notas internas con trazabilidad de autor."),
+        ScopeCatalog.Create("operations.carrier.connection.read", "Operaciones · Navieras · Consultar integraciones", "Consulta el catálogo de conexiones marítimas."),
+        ScopeCatalog.Create("operations.carrier.connection.manage", "Operaciones · Navieras · Administrar integraciones", "Administra capacidades y conexiones autorizadas."),
+        ScopeCatalog.Create(AuditRead, "Operaciones · Auditoría · Consultar", "Permite consultar eventos auditados de equipos y expedientes; no autoriza modificaciones."),
+        ScopeCatalog.Create(RealtimeRead, "Operaciones · Tiempo real · Suscribirse", "Autoriza acceso a notificaciones SignalR de expedientes visibles para el usuario.")
     ];
 }
