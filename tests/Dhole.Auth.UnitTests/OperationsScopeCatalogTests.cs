@@ -35,7 +35,7 @@ public sealed class OperationsScopeCatalogTests
     public void RolePoolOnlyContainsTheTwoApprovedLogisticsRoles()
     {
         CollectionAssert.AreEquivalent(
-            new[] { "Operador Logístico", "Supervisor Operativo" },
+            new[] { "Operativo Logístico", "Supervisor Operativo" },
             OperationsRolePolicy.AssignmentEligible);
     }
 

@@ -1,0 +1,14 @@
+{
+  "releaseId": "DH-20261119-OPS-ROLE-NAME-249",
+  "component": "DholeAuthService",
+  "from": "1.16.0",
+  "to": "1.16.1",
+  "ecosystemVersion": "1.92.1",
+  "type": "PATCH",
+  "changes": [
+    "Exact role match Operativo Logístico and Supervisor Operativo for eligible team members"
+  ],
+  "rolesCreated": 0,
+  "scopesGranted": 0,
+  "staging": "pending"
+}

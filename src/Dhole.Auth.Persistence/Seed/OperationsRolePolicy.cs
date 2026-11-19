@@ -6,7 +6,7 @@ namespace Dhole.Auth.Persistence.Seed;
 /// </summary>
 public static class OperationsRolePolicy
 {
-    public const string Operator = "Operador Logístico";
+    public const string Operator = "Operativo Logístico";
     public const string Supervisor = "Supervisor Operativo";
     public static readonly string[] AssignmentEligible = [Operator, Supervisor];
 
