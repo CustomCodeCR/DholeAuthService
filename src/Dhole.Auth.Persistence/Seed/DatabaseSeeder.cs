@@ -44,6 +44,7 @@ public sealed class DatabaseSeeder(
         await SeedRolesAsync(cancellationToken);
         await SeedScopesAsync(cancellationToken);
         await EnsureDynamicsAdministrationRolesAsync(cancellationToken);
+        await EnsureOperationsRolesAsync(cancellationToken);
         await EnsureAdministratorCredentialScopesAsync(cancellationToken);
         await EnsureSellerVisibilityRoleScopesAsync(cancellationToken);
         await AssignAllScopesToSuperUserAsync(cancellationToken);
@@ -271,6 +272,70 @@ public sealed class DatabaseSeeder(
                 .ToListAsync(cancellationToken);
             foreach (var id in assignedUserIds)
                 await permissionCache.RemoveAsync(id, cancellationToken);
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Operational roles are configured for manual assignment in Auth.
+    /// Creating a role never enrolls any employee. The scope and role catalog
+    /// is reconciled idempotently whenever Auth starts.
+    /// </summary>
+    private async Task EnsureOperationsRolesAsync(CancellationToken cancellationToken)
+    {
+        var rules = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Operaciones · Administrador de equipos"] = [
+                OperationsScopes.TeamManage,
+                OperationsScopes.CaseRead,
+                OperationsScopes.CaseReadAll,
+                OperationsScopes.ApertureAssign,
+                OperationsScopes.AuditRead,
+                OperationsScopes.RealtimeRead
+            ],
+            ["Operaciones · Validador de Aperturas"] = [
+                OperationsScopes.CaseRead,
+                OperationsScopes.ApertureReview,
+                OperationsScopes.RealtimeRead
+            ],
+            ["Operaciones · Coordinación Origen"] = [
+                OperationsScopes.CaseRead,
+                OperationsScopes.OriginRead,
+                OperationsScopes.OriginDepartureConfirm,
+                OperationsScopes.RealtimeRead
+            ]
+        };
+
+        var codes = rules.Values.SelectMany(x => x).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var scopes = await dbContext.Scopes
+            .Where(x => x.IsActive && codes.Contains(x.Code))
+            .ToDictionaryAsync(x => x.Code, x => x.Id, cancellationToken);
+        var missing = codes.Where(code => !scopes.ContainsKey(code)).ToArray();
+        if (missing.Length != 0)
+            throw new InvalidOperationException(
+                "Faltan scopes requeridos de Operations: " + string.Join(", ", missing));
+
+        foreach (var item in rules)
+        {
+            var role = await dbContext.Roles.Include(x => x.Scopes)
+                .FirstOrDefaultAsync(x => x.Name == item.Key, cancellationToken);
+            if (role is null)
+            {
+                role = Role.Create(item.Key,
+                    "Rol de Operations para asignación manual en Auth. No inscribe usuarios automáticamente.",
+                    isSystemRole: true, createdBy: null);
+                await dbContext.Roles.AddAsync(role, cancellationToken);
+            }
+
+            foreach (var code in item.Value)
+                role.AssignScope(scopes[code], assignedBy: null);
+
+            var userIds = await dbContext.UserRoles
+                .Where(x => x.RoleId == role.Id).Select(x => x.UserId).Distinct()
+                .ToListAsync(cancellationToken);
+            foreach (var userId in userIds)
+                await permissionCache.RemoveAsync(userId, cancellationToken);
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
