@@ -2,6 +2,7 @@ using Dhole.Auth.Api.Authorization;
 using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Domain.Users.Enums;
 using Dhole.Auth.Persistence.DbContexts;
+using Dhole.Auth.Persistence.Seed;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dhole.Auth.Api.Endpoints;
@@ -16,8 +17,17 @@ public static class OperationsUserDirectoryEndpoints
             int? page, int? pageSize, string? search, CancellationToken ct) =>
         {
             if (search?.Length > 100) return Results.BadRequest(new { code = "SEARCH_TOO_LONG" });
+            // Do not expose all internal users: only explicitly assigned logistics
+            // operators/supervisors are eligible for operational team membership.
+            var eligibleRoleNames = OperationsRolePolicy.AssignmentEligible;
+            var eligibleRoleIds = db.Roles.AsNoTracking()
+                .Where(role => role.IsActive && !role.IsDeleted &&
+                    eligibleRoleNames.Contains(role.Name))
+                .Select(role => role.Id);
             var query = db.Users.AsNoTracking().Where(u =>
-                !u.IsDeleted && u.IsActive && !u.IsLocked && u.UserType == UserType.Internal);
+                !u.IsDeleted && u.IsActive && !u.IsLocked && u.UserType == UserType.Internal &&
+                db.UserRoles.Any(assignment => assignment.UserId == u.Id &&
+                    eligibleRoleIds.Contains(assignment.RoleId)));
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var q = search.Trim().ToLowerInvariant();
@@ -38,18 +48,29 @@ public static class OperationsUserDirectoryEndpoints
         api.MapGet("/{userId:guid}/operations-eligibility", async (
             Guid userId, ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct) =>
         {
+            var eligibleRoleNames = OperationsRolePolicy.AssignmentEligible;
+            var eligibleRoleIds = db.Roles.AsNoTracking()
+                .Where(role => role.IsActive && !role.IsDeleted &&
+                    eligibleRoleNames.Contains(role.Name))
+                .Select(role => role.Id);
             var user = await db.Users.AsNoTracking()
                 .Where(u => u.Id == userId && !u.IsDeleted && u.IsActive && !u.IsLocked &&
                     u.UserType == UserType.Internal)
                 .Select(u => new { u.Id, u.DisplayName, u.UserName }).SingleOrDefaultAsync(ct);
             if (user is null) return Results.NotFound();
+            var eligibleForOperations = await db.UserRoles.AsNoTracking()
+                .AnyAsync(assignment => assignment.UserId == userId &&
+                    eligibleRoleIds.Contains(assignment.RoleId), ct);
             var effective = await permissions.GetAsync(userId, ct);
             var canReviewAperturas =
                 effective.EffectiveScopes.Contains("operations.aperture.validation.review",
                     StringComparer.OrdinalIgnoreCase) &&
                 effective.EffectiveScopes.Contains("operations.case.read",
                     StringComparer.OrdinalIgnoreCase);
-            return Results.Ok(new { user.Id, user.DisplayName, user.UserName, canReviewAperturas });
+            return Results.Ok(new {
+                user.Id, user.DisplayName, user.UserName, eligibleForOperations,
+                canReviewAperturas = eligibleForOperations && canReviewAperturas
+            });
         }).RequireScope("operations.team.manage");
         return app;
     }
