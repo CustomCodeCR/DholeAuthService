@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "ecosystem": "Dhole",
   "component": "DholeAuthService",
-  "version": "1.16.2",
-  "ecosystemVersion": "1.94.0",
-  "releaseId": "DH-20261119-OPS-TEAM-BULK-251",
+  "version": "1.17.0",
+  "ecosystemVersion": "1.107.0",
+  "releaseId": "DH-20261120-VERSION-NOTICES-361",
   "releaseStatus": "candidate-ci-and-staging-pending",
-  "businessReleaseId": "DH-20261119-OPS-TEAM-BULK-251"
+  "businessReleaseId": "DH-20261120-VERSION-NOTICES-361"
 }

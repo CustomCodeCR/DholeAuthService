@@ -1,3 +1,9 @@
+## [1.17.0] - 2026-11-20 (DH-20261120-VERSION-NOTICES-361 · configuración de avisos de nuevas versiones)
+
+- MINOR: preferencias persistentes globales e individuales; solo SuperUsuario puede modificar todos los usuarios o cuentas ajenas.
+- Auth emite por Outbox y Redis Streams invalidaciones destinadas a grupos SignalR específicos de los usuarios. Migración auth.VersionUpdateNotificationSettings.
+- Versión Auth 1.16.2 → 1.17.0, ecosistema 1.107.0. CI y pruebas multiusuario en staging requeridas antes de master.
+
 ## [1.16.2] - 2026-11-19 (DH-20261119-OPS-TEAM-BULK-251 · Selección múltiple de equipos)
 
 - PATCH: el directorio de usuarios de Operations reconoce los nombres históricos «Operativo Logisitico» y «Operativo Logistico» además de «Operativo Logístico» y «Supervisor Operativo»; no crea roles ni amplía permisos a otras áreas.
