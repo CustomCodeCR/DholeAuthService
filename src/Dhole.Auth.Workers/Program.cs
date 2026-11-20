@@ -31,6 +31,12 @@ builder
     .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 
+// Route the durable version-notice policy event to the Notifications consumer.
+builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+{
+    ["Redis:Streams:Destinations:auth.version_update_notifications.changed"] = "dhole.notifications.events"
+});
+
 Console.WriteLine($"Postgres: {builder.Configuration["Postgres:ConnectionString"]}");
 
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
