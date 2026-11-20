@@ -89,6 +89,7 @@ app.MapInternalPricingRecipientEndpoints();
 app.MapInternalCrmUserEndpoints();
 app.MapDatabaseMaintenanceEndpoints();
 app.MapEnvironmentRecoveryEndpoints();
+app.MapVersionUpdateNotificationEndpoints();
 
 using (var scope = app.Services.CreateScope())
 {
