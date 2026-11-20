@@ -1,0 +1,35 @@
+name: Diagnose Auth update-notice 500 (read-only staging)
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.github/workflows/diagnose-version-notices-362.yml'
+permissions:
+  contents: read
+jobs:
+  read-only-exception-classification:
+    runs-on: [self-hosted, linux, x64, dhole]
+    timeout-minutes: 5
+    steps:
+      - name: Classify staging Auth API exceptions without credentials or payloads
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import subprocess, re
+          p = subprocess.run(['docker','logs','--since','90m','--tail','20000','dhole-staging-auth-api-1'],capture_output=True,text=True,timeout=50)
+          if p.returncode:
+              print('docker logs unavailable; exit=',p.returncode)
+              raise SystemExit(0)
+          lines=(p.stdout+'\n'+p.stderr).splitlines()
+          selected=[]
+          rx=re.compile(r'(exception|sqlstate|relation .* does not exist|permission denied|violates .*constraint|VersionUpdateNotificationEndpoints|Internal server error|500|42P01|42703|23505|28P01|unauthorized)',re.I)
+          for line in lines:
+              if not rx.search(line): continue
+              line=re.sub(r'Bearer\s+[^\s]+','Bearer [REDACTED]',line,flags=re.I)
+              line=re.sub(r'(?i)(password|token|secret|authorization)[=:]\s*[^\s;,]+',r'\1=[REDACTED]',line)
+              line=re.sub(r'[\w.+-]+@[\w.-]+','[REDACTED_EMAIL]',line)
+              selected.append(line[:310])
+          print('Total log lines:',len(lines),'matching diagnostic lines:',len(selected))
+          for line in selected[-75:]:print(line)
+          PY
