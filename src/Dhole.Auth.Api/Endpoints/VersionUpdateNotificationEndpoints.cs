@@ -113,25 +113,34 @@ public static class VersionUpdateNotificationEndpoints
                     ""UpdatedByUserId"" = EXCLUDED.""UpdatedByUserId""", ct);
         }
 
-        // Durable event in the existing Auth outbox for downstream SignalR consumers.
-        db.OutboxMessages.Add(new OutboxMessage
+        // F6.03 forbids Clients.All. Global changes fan out as per-user
+        // invalidations through the existing durable Auth -> Notifications stream.
+        var targets = key == GlobalKey
+            ? await db.Users.AsNoTracking().Where(user => user.IsActive)
+                .Select(user => user.Id).ToListAsync(ct)
+            : new List<Guid> { Guid.Parse(key["user:".Length..]) };
+
+        foreach (var target in targets.Distinct())
         {
-            EventId = Guid.NewGuid(),
-            EventType = EventName,
-            EventName = EventName,
-            SourceService = "DholeAuthService",
-            PayloadJson = JsonSerializer.Serialize(new
+            db.OutboxMessages.Add(new OutboxMessage
             {
-                scope = key == GlobalKey ? "global" : "user",
-                userId = key == GlobalKey ? null : key["user:".Length..],
-                actorUserId = actor,
-                updatedAtUtc = DateTime.UtcNow,
-            }),
-            CorrelationId = Guid.NewGuid().ToString(),
-            Status = OutboxMessageStatus.Pending,
-            RetryCount = 0,
-            CreatedAtUtc = DateTime.UtcNow,
-        });
+                EventId = Guid.NewGuid(),
+                EventType = EventName,
+                EventName = EventName,
+                SourceService = "DholeAuthService",
+                PayloadJson = JsonSerializer.Serialize(new
+                {
+                    scope = key == GlobalKey ? "global" : "user",
+                    userId = target.ToString("D"),
+                    actorUserId = actor,
+                    updatedAtUtc = DateTime.UtcNow,
+                }),
+                CorrelationId = Guid.NewGuid().ToString(),
+                Status = OutboxMessageStatus.Pending,
+                RetryCount = 0,
+                CreatedAtUtc = DateTime.UtcNow,
+            });
+        }
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
     }
