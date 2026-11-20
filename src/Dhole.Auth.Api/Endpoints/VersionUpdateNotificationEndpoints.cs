@@ -91,58 +91,67 @@ public static class VersionUpdateNotificationEndpoints
     private static async Task SetAsync(ServiceDbContext db, string key, bool? enabled,
         Guid actor, CancellationToken ct)
     {
-        // Persist the preference and the durable outbox event in one transaction.
-        await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        if (enabled is null)
+        // NpgsqlRetryingExecutionStrategy rejects user-started transactions unless
+        // the entire database unit is executed through its retry strategy.
+        // This protects the preference update and its outbox invalidations together.
+        var strategy = db.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async () =>
         {
-            // Only per-user overrides may be reset to the global default.
-            if (key == GlobalKey) throw new InvalidOperationException("The global preference cannot be null.");
-            await db.Database.ExecuteSqlInterpolatedAsync(
-                $"DELETE FROM auth.\"VersionUpdateNotificationSettings\" WHERE \"Key\" = {key}", ct);
-        }
-        else
-        {
-            var timestamp = DateTime.UtcNow;
-            await db.Database.ExecuteSqlInterpolatedAsync($@"
-                INSERT INTO auth.""VersionUpdateNotificationSettings""
-                    (""Key"", ""Enabled"", ""UpdatedAtUtc"", ""UpdatedByUserId"")
-                VALUES ({key}, {enabled.Value}, {timestamp}, {actor})
-                ON CONFLICT (""Key"") DO UPDATE SET
-                    ""Enabled"" = EXCLUDED.""Enabled"",
-                    ""UpdatedAtUtc"" = EXCLUDED.""UpdatedAtUtc"",
-                    ""UpdatedByUserId"" = EXCLUDED.""UpdatedByUserId""", ct);
-        }
-
-        // F6.03 forbids Clients.All. Global changes fan out as per-user
-        // invalidations through the existing durable Auth -> Notifications stream.
-        var targets = key == GlobalKey
-            ? await db.Users.AsNoTracking().Where(user => user.IsActive)
-                .Select(user => user.Id).ToListAsync(ct)
-            : new List<Guid> { Guid.Parse(key["user:".Length..]) };
-
-        foreach (var target in targets.Distinct())
-        {
-            db.OutboxMessages.Add(new OutboxMessage
+            // A failed attempt may leave tracked outbox entries in the DbContext.
+            // Rebuild that attempt's entries instead of duplicating them on retry.
+            db.ChangeTracker.Clear();
+            await using var transaction = await db.Database.BeginTransactionAsync(ct);
+            if (enabled is null)
             {
-                EventId = Guid.NewGuid(),
-                EventType = EventName,
-                EventName = EventName,
-                SourceService = "DholeAuthService",
-                PayloadJson = JsonSerializer.Serialize(new
+                // Only per-user overrides may be reset to the global default.
+                if (key == GlobalKey) throw new InvalidOperationException("The global preference cannot be null.");
+                await db.Database.ExecuteSqlInterpolatedAsync(
+                    $"DELETE FROM auth.\"VersionUpdateNotificationSettings\" WHERE \"Key\" = {key}", ct);
+            }
+            else
+            {
+                var timestamp = DateTime.UtcNow;
+                await db.Database.ExecuteSqlInterpolatedAsync($@"
+                    INSERT INTO auth.""VersionUpdateNotificationSettings""
+                        (""Key"", ""Enabled"", ""UpdatedAtUtc"", ""UpdatedByUserId"")
+                    VALUES ({key}, {enabled.Value}, {timestamp}, {actor})
+                    ON CONFLICT (""Key"") DO UPDATE SET
+                        ""Enabled"" = EXCLUDED.""Enabled"",
+                        ""UpdatedAtUtc"" = EXCLUDED.""UpdatedAtUtc"",
+                        ""UpdatedByUserId"" = EXCLUDED.""UpdatedByUserId""", ct);
+            }
+
+            // F6.03 forbids Clients.All. Global changes fan out as per-user
+            // invalidations through the existing durable Auth -> Notifications stream.
+            var targets = key == GlobalKey
+                ? await db.Users.AsNoTracking().Where(user => user.IsActive)
+                    .Select(user => user.Id).ToListAsync(ct)
+                : new List<Guid> { Guid.Parse(key["user:".Length..]) };
+
+            foreach (var target in targets.Distinct())
+            {
+                db.OutboxMessages.Add(new OutboxMessage
                 {
-                    scope = key == GlobalKey ? "global" : "user",
-                    userId = target.ToString("D"),
-                    actorUserId = actor,
-                    updatedAtUtc = DateTime.UtcNow,
-                }),
-                CorrelationId = Guid.NewGuid().ToString(),
-                Status = OutboxMessageStatus.Pending,
-                RetryCount = 0,
-                CreatedAtUtc = DateTime.UtcNow,
-            });
-        }
-        await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
+                    EventId = Guid.NewGuid(),
+                    EventType = EventName,
+                    EventName = EventName,
+                    SourceService = "DholeAuthService",
+                    PayloadJson = JsonSerializer.Serialize(new
+                    {
+                        scope = key == GlobalKey ? "global" : "user",
+                        userId = target.ToString("D"),
+                        actorUserId = actor,
+                        updatedAtUtc = DateTime.UtcNow,
+                    }),
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    Status = OutboxMessageStatus.Pending,
+                    RetryCount = 0,
+                    CreatedAtUtc = DateTime.UtcNow,
+                });
+            }
+            await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+        });
     }
 
     private static bool IsSuperUser(ClaimsPrincipal principal) =>

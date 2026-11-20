@@ -1,3 +1,9 @@
+## [1.17.1] - 2026-11-20 (DH-20261120-VERSION-NOTICE-500-362 · corrección HTTP 500 en preferencias de versiones)
+
+- PATCH: ejecutar el cambio de preferencia global o individual y sus eventos outbox en la estrategia de reintentos Npgsql; la transacción iniciada manualmente sin esa estrategia provocaba HTTP 500 en staging.
+- Se reconstruye el seguimiento de eventos entre reintentos sin generar notificaciones de bandeja.
+- Misma API, permisos y SignalR. Release coordinado con DholeSystem y DholeWeb 1.107.1.
+
 ## [1.17.0] - 2026-11-20 (DH-20261120-VERSION-NOTICES-361 · preferencias de avisos de actualización)
 
 - MINOR: endpoints autenticados para consultar/guardar la preferencia personal de avisos de nuevas versiones, y endpoints exclusivos de SuperUsuario para ajuste global o individual.
