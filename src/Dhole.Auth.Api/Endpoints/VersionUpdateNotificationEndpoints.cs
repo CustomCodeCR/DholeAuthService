@@ -91,6 +91,8 @@ public static class VersionUpdateNotificationEndpoints
     private static async Task SetAsync(ServiceDbContext db, string key, bool? enabled,
         Guid actor, CancellationToken ct)
     {
+        // Persist the preference and the durable outbox event in one transaction.
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         if (enabled is null)
         {
             // Only per-user overrides may be reset to the global default.
@@ -131,6 +133,7 @@ public static class VersionUpdateNotificationEndpoints
             CreatedAtUtc = DateTime.UtcNow,
         });
         await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
     }
 
     private static bool IsSuperUser(ClaimsPrincipal principal) =>
