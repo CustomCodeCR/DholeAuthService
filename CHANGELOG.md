@@ -1,7 +1,7 @@
 ## [1.17.0] - 2026-11-20 (DH-20261120-VERSION-NOTICES-361 · preferencias de avisos de actualización)
 
 - MINOR: endpoints autenticados para consultar/guardar la preferencia personal de avisos de nuevas versiones, y endpoints exclusivos de SuperUsuario para ajuste global o individual.
-- Migración `auth.VersionUpdateNotificationSettings` con persistencia por usuario; preferencia global en false impide avisos para todos. Publicación duradera de eventos al Outbox para futura entrega SignalR.
+- Migración `auth.VersionUpdateNotificationSettings`; global=false impide avisos para todos. Eventos duraderos del Outbox se envían por Redis Streams a Notifications por destinatario validado (sin Clients.All) para actualizar sesiones mediante SignalR.
 - DholeAuthService 1.16.2 → 1.17.0; DholeWeb/DholeSystem 1.107.0. Requiere CI, compilación, migración staging y pruebas de permisos. Producción no autorizada.
 
 ## [1.16.2] - 2026-11-19 (DH-20261119-OPS-TEAM-BULK-251 · Selección múltiple de equipos)
