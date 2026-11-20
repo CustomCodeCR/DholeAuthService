@@ -1,3 +1,9 @@
+## [1.17.1] - 2026-11-20 (DH-20261120-VERSION-NOTICE-500-362 · corrección HTTP 500 preferencias globales y personales)
+
+- PATCH: PostgreSQL NpgsqlRetryingExecutionStrategy requiere que transacción y outbox se ejecuten dentro de Database.CreateExecutionStrategy().ExecuteAsync().
+- Corrige guardado en /api/auth/version-update-notifications/global, /me y /users/{id}. Elimina entradas Outbox rastreadas al reintentar, sin cambios de contrato ni de permisos.
+- Release coordinado con DholeWeb y DholeSystem 1.107.1.
+
 ## [1.17.0] - 2026-11-20 (DH-20261120-VERSION-NOTICES-361 · configuración de avisos de nuevas versiones)
 
 - MINOR: preferencias persistentes globales e individuales; solo SuperUsuario puede modificar todos los usuarios o cuentas ajenas.
