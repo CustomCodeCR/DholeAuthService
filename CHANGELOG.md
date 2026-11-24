@@ -1,3 +1,7 @@
+## [1.17.2] - 2026-11-24
+
+- PATCH: consulta interna autenticada por clave de servicio de elegibilidad de Operations, comparte exactamente el filtro de usuarios internos activos y scopes de revisión del endpoint existente. No otorga permisos.
+
 ## [1.17.1] - 2026-11-20 (DH-20261120-VERSION-NOTICE-500-362 · corrección HTTP 500 en preferencias de versiones)
 
 - PATCH: ejecutar el cambio de preferencia global o individual y sus eventos outbox en la estrategia de reintentos Npgsql; la transacción iniciada manualmente sin esa estrategia provocaba HTTP 500 en staging.

@@ -129,7 +129,7 @@ public static class InternalCrmUserEndpoints
         return Results.Ok(new{total,page=n,pageSize=size,items=users});
     }
 
-    private static bool Authorized(HttpRequest req, IConfiguration configuration)
+    internal static bool Authorized(HttpRequest req, IConfiguration configuration)
     {
         var header = configuration["InternalServices:HeaderName"]?.Trim();
         if (string.IsNullOrEmpty(header)) header = "X-Dhole-Service-Key";
