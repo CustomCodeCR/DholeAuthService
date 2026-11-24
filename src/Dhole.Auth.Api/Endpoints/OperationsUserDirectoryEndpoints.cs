@@ -63,9 +63,22 @@ public static class OperationsUserDirectoryEndpoints
             return Results.Ok(new { items });
         }).RequireScope("operations.audit.read");
 
-        api.MapGet("/{userId:guid}/operations-eligibility", async (
-            Guid userId, ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct) =>
+        api.MapGet("/{userId:guid}/operations-eligibility", EligibilityAsync)
+            .RequireScope("operations.team.manage");
+        app.MapGet("/api/internal/auth/operations-users/{userId:guid}/eligibility", async (
+            Guid userId, HttpRequest request, IConfiguration configuration,
+            ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct) =>
         {
+            if (!InternalCrmUserEndpoints.Authorized(request, configuration))
+                return Results.Unauthorized();
+            return await EligibilityAsync(userId, db, permissions, ct);
+        }).AllowAnonymous().WithTags("Internal");
+        return app;
+    }
+
+    private static async Task<IResult> EligibilityAsync(Guid userId, ServiceDbContext db,
+        IEffectivePermissionService permissions, CancellationToken ct)
+    {
             var eligibleRoleNames = OperationsRolePolicy.AssignmentEligible;
             var eligibleRoleIds = db.Roles.AsNoTracking()
                 .Where(role => role.IsActive && !role.IsDeleted &&
@@ -89,7 +102,6 @@ public static class OperationsUserDirectoryEndpoints
                 user.Id, user.DisplayName, user.UserName, eligibleForOperations,
                 canReviewAperturas = eligibleForOperations && canReviewAperturas
             });
-        }).RequireScope("operations.team.manage");
-        return app;
+
     }
 }
