@@ -63,7 +63,7 @@ public static class OperationsUserDirectoryEndpoints
             return Results.Ok(new { items });
         }).RequireScope("operations.audit.read");
 
-        api.MapGet("/{userId:guid}/operations-eligibility", EligibilityAsync)
+        api.MapGet("/{userId:guid}/operations-eligibility", (Guid userId, ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct) => EligibilityAsync(userId, db, permissions, ct))
             .RequireScope("operations.team.manage");
         app.MapGet("/api/internal/auth/operations-users/{userId:guid}/eligibility", async (
             Guid userId, HttpRequest request, IConfiguration configuration,
@@ -71,13 +71,13 @@ public static class OperationsUserDirectoryEndpoints
         {
             if (!InternalCrmUserEndpoints.Authorized(request, configuration))
                 return Results.Unauthorized();
-            return await EligibilityAsync(userId, db, permissions, ct);
+            return await EligibilityAsync(userId, db, permissions, ct, includeEmail: true);
         }).AllowAnonymous().WithTags("Internal");
         return app;
     }
 
     private static async Task<IResult> EligibilityAsync(Guid userId, ServiceDbContext db,
-        IEffectivePermissionService permissions, CancellationToken ct)
+        IEffectivePermissionService permissions, CancellationToken ct, bool includeEmail = false)
     {
             var eligibleRoleNames = OperationsRolePolicy.AssignmentEligible;
             var eligibleRoleIds = db.Roles.AsNoTracking()
@@ -87,7 +87,7 @@ public static class OperationsUserDirectoryEndpoints
             var user = await db.Users.AsNoTracking()
                 .Where(u => u.Id == userId && !u.IsDeleted && u.IsActive && !u.IsLocked &&
                     u.UserType == UserType.Internal)
-                .Select(u => new { u.Id, u.DisplayName, u.UserName }).SingleOrDefaultAsync(ct);
+                .Select(u => new { u.Id, u.DisplayName, u.UserName, u.Email }).SingleOrDefaultAsync(ct);
             if (user is null) return Results.NotFound();
             var eligibleForOperations = await db.UserRoles.AsNoTracking()
                 .AnyAsync(assignment => assignment.UserId == userId &&
@@ -98,7 +98,11 @@ public static class OperationsUserDirectoryEndpoints
                     StringComparer.OrdinalIgnoreCase) &&
                 effective.EffectiveScopes.Contains("operations.case.read",
                     StringComparer.OrdinalIgnoreCase);
-            return Results.Ok(new {
+            if (includeEmail)
+            return Results.Ok(new { user.Id, user.DisplayName, user.UserName,
+                email = eligibleForOperations ? user.Email : null, eligibleForOperations,
+                canReviewAperturas = eligibleForOperations && canReviewAperturas });
+        return Results.Ok(new {
                 user.Id, user.DisplayName, user.UserName, eligibleForOperations,
                 canReviewAperturas = eligibleForOperations && canReviewAperturas
             });

@@ -1,3 +1,7 @@
+## [1.17.3] - 2026-11-25
+
+- Return registered email for eligible Operations users only via existing service-key-protected endpoint. Public response unchanged; CI/staging pending.
+
 ## [1.17.2] - 2026-11-24
 
 - PATCH: consulta interna autenticada por clave de servicio de elegibilidad de Operations, comparte exactamente el filtro de usuarios internos activos y scopes de revisión del endpoint existente. No otorga permisos.
