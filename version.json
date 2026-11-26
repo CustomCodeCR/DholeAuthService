@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "ecosystem": "Dhole",
   "component": "DholeAuthService",
-  "version": "1.17.3",
-  "ecosystemVersion": "1.127.4",
-  "releaseId": "DH-20261125-OPS-ORIGIN-HANDOFF",
+  "version": "1.18.0",
+  "ecosystemVersion": "1.135.0",
+  "releaseId": "DH-20261126-PRICING-CATEGORY-REPORT",
   "releaseStatus": "candidate-ci-staging-pending",
-  "businessReleaseId": "DH-20261125-OPS-ORIGIN-HANDOFF"
+  "businessReleaseId": "DH-20261126-PRICING-CATEGORY-REPORT"
 }
