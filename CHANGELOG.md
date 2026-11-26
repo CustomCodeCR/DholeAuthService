@@ -1,3 +1,7 @@
+## [1.20.0] - 2026-11-26
+
+- MINOR: permisos efectivos derivados de equipos activos de Operations. Proyección separada de roles y scopes directos, reconciliación versionada idempotente y eventos de actualización de permisos. CI y staging pendientes.
+
 ## [1.19.0] - 2026-11-26
 
 - MINOR candidato: registra cinco scopes ya exigidos por Operations para edición de aperturas, actualización de Origen, costos y finanzas. Mantiene otorgamiento explícito de permisos, roles existentes y políticas de acceso. Prueba de catálogo ampliada; CI/staging pendientes.

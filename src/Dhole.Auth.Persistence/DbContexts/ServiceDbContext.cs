@@ -149,6 +149,13 @@ public sealed class ServiceDbContext(
             QueueSecurityEvent(session.UserId, session.Id, "forceLogout");
     }
 
+    // Derived Operations grants are persisted separately from direct and role scopes.
+    public void QueueOperationsTeamPermissionRefresh(Guid userId)
+    {
+        if (AuthRealtimeInvalidation.IsEnabled(realtimeConfiguration))
+            QueueSecurityEvent(userId, null, "refreshPermissions");
+    }
+
     private void QueueSecurityEvent(Guid userId, Guid? sessionId, string action)
     {
         var eventId = Guid.NewGuid();

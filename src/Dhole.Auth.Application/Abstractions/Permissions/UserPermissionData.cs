@@ -6,5 +6,6 @@ public sealed record UserPermissionData(
     bool IsLocked,
     IReadOnlyCollection<string> ActiveRoles,
     IReadOnlyCollection<string> DirectScopes,
-    IReadOnlyCollection<string> RoleScopes
+    IReadOnlyCollection<string> RoleScopes,
+    IReadOnlyCollection<string>? TeamScopes = null
 );

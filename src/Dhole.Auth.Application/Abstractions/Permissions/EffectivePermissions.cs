@@ -5,5 +5,6 @@ public sealed record EffectivePermissions(
     IReadOnlyCollection<string> Roles,
     IReadOnlyCollection<string> DirectScopes,
     IReadOnlyCollection<string> RoleScopes,
-    IReadOnlyCollection<string> EffectiveScopes
+    IReadOnlyCollection<string> EffectiveScopes,
+    IReadOnlyCollection<string>? TeamScopes = null
 );

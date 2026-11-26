@@ -38,12 +38,13 @@ public sealed class EffectivePermissionService(
                 data.ActiveRoles,
                 data.DirectScopes,
                 data.RoleScopes,
-                allScopes.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(x => x).ToArray()
+                allScopes.Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(x => x).ToArray(),
+                data.TeamScopes ?? []
             );
         }
 
         var effectiveScopes = data
-            .DirectScopes.Concat(data.RoleScopes)
+            .DirectScopes.Concat(data.RoleScopes).Concat(data.TeamScopes ?? [])
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(x => x)
             .ToArray();
@@ -53,7 +54,8 @@ public sealed class EffectivePermissionService(
             data.ActiveRoles,
             data.DirectScopes,
             data.RoleScopes,
-            effectiveScopes
+            effectiveScopes,
+            data.TeamScopes ?? []
         );
     }
 }
