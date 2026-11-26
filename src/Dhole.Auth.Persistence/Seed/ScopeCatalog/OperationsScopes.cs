@@ -18,7 +18,7 @@ internal static class OperationsScopes
         ScopeCatalog.Create("operations.case.create", "Operaciones · Trámites · Crear", "Permite abrir expedientes IDTRA autorizados."),
         ScopeCatalog.Create(CaseRead, "Operaciones · Trámites · Consultar asignados", "Consulta expedientes donde el usuario participa o está asignado."),
         ScopeCatalog.Create(CaseReadAll, "Operaciones · Trámites · Consultar todos", "Consulta transversal de expedientes; requiere también operations.case.read."),
-        ScopeCatalog.Create(TeamManage, "Operaciones · Equipos · Administrar integrantes", "Permite configurar equipos y asignar empleados activos desde Auth. No concede scopes a los empleados."),
+        ScopeCatalog.Create(TeamManage, "Operaciones · Equipos · Administrar integrantes", "Permite configurar equipos y asignar empleados activos desde Auth. Sincroniza los scopes operativos derivados de la membresía sin modificar permisos directos."),
         ScopeCatalog.Create("operations.assignment.manage", "Operaciones · Asignaciones · Administrar", "Gestiona la asignación de etapas y responsables autorizados."),
         ScopeCatalog.Create(ApertureAssign, "Operaciones · Aperturas · Asignar dos validadores", "Selecciona dos revisores diferentes del pool activo."),
         ScopeCatalog.Create(ApertureReview, "Operaciones · Aperturas · Aprobar o solicitar cambios", "Permite emitir una decisión individual sobre la validación asignada."),
