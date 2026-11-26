@@ -2,7 +2,7 @@ namespace Dhole.Auth.Persistence.Seed;
 
 /// <summary>
 /// Exact role names authorized to populate the Operations team membership pool.
-/// Scope grants are independent: membership in either role never grants new scopes.
+/// A role alone never grants team scopes; only synchronized active team memberships do.
 /// </summary>
 public static class OperationsRolePolicy
 {
