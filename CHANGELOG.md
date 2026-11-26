@@ -1,3 +1,7 @@
+## [1.19.0] - 2026-11-26
+
+- MINOR candidato: registra cinco scopes ya exigidos por Operations para edición de aperturas, actualización de Origen, costos y finanzas. Mantiene otorgamiento explícito de permisos, roles existentes y políticas de acceso. Prueba de catálogo ampliada; CI/staging pendientes.
+
 ## [1.18.0] - 2026-11-26
 
 - MINOR: DH-20261126-PRICING-CATEGORY-REPORT. Scope pricing.rate.report.export para el reporte de tarifas por categoría, sin permisos operativos globales. CI y staging pendientes.
