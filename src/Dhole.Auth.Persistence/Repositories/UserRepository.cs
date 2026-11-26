@@ -1,6 +1,8 @@
 using CustomCodeFramework.Core.Pagination;
 using CustomCodeFramework.Postgres.EntityFramework.Repositories;
 using Dhole.Auth.Application.Abstractions.Repositories;
+using Dhole.Auth.Application.Abstractions.Permissions;
+using Dhole.Auth.Application.Permissions;
 using Dhole.Auth.Application.Users;
 using Dhole.Auth.Contracts.Users;
 using Dhole.Auth.Domain.Users.Entities;
@@ -9,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dhole.Auth.Persistence.Repositories;
 
-public sealed class UserRepository(ServiceDbContext dbContext)
+public sealed class UserRepository(ServiceDbContext dbContext, IEffectivePermissionService? permissionService = null)
     : EfRepository<User, Guid>(dbContext),
         IUserRepository
 {
@@ -194,29 +196,17 @@ public sealed class UserRepository(ServiceDbContext dbContext)
 
         var directScopes = await GetUserScopesAsync(userId, cancellationToken);
 
-        var roleScopes = await (
-            from userRole in dbContext.UserRoles.AsNoTracking()
-            join user in dbContext.Users.AsNoTracking() on userRole.UserId equals user.Id
-            join role in dbContext.Roles.AsNoTracking() on userRole.RoleId equals role.Id
-            join roleScope in dbContext.RoleScopes.AsNoTracking() on role.Id equals roleScope.RoleId
-            join scope in dbContext.Scopes.AsNoTracking() on roleScope.ScopeId equals scope.Id
-            where
-                userRole.UserId == userId
-                && !user.IsDeleted
-                && role.IsActive
-                && !role.IsDeleted
-                && scope.IsActive
-            orderby scope.Code
-            select new UserScopeDto(userId, scope.Id, scope.Code, scope.Name)
-        ).ToListAsync(cancellationToken);
-
-        var effectiveScopes = directScopes
-            .Where(x => roleScopes.All(y => y.ScopeId != x.ScopeId))
-            .Concat(roleScopes)
-            .GroupBy(x => x.ScopeId)
-            .Select(x => x.First())
-            .OrderBy(x => x.ScopeCode)
-            .ToList();
+        // Use the same authoritative permissions as JWT issuance and Auth's
+        // request principal, including automatic team grants. Direct grants
+        // remain separately editable in the existing scopes tab.
+        var service = permissionService ?? new EffectivePermissionService(new AuthPermissionReadRepository(dbContext));
+        var permissions = await service.GetAsync(userId, cancellationToken);
+        var effectiveCodes = permissions.EffectiveScopes.ToArray();
+        var effectiveScopes = await dbContext.Scopes.AsNoTracking()
+            .Where(scope => scope.IsActive && effectiveCodes.Contains(scope.Code))
+            .OrderBy(scope => scope.Code)
+            .Select(scope => new UserScopeDto(userId, scope.Id, scope.Code, scope.Name))
+            .ToListAsync(cancellationToken);
 
         return new UserPermissionsDto(userId, roles, directScopes, effectiveScopes);
     }
