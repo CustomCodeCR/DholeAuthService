@@ -1,3 +1,7 @@
+## [1.18.0] - 2026-11-26
+
+- MINOR: DH-20261126-PRICING-CATEGORY-REPORT. Scope pricing.rate.report.export para el reporte de tarifas por categoría, sin permisos operativos globales. CI y staging pendientes.
+
 ## [1.17.3] - 2026-11-25
 
 - Return registered email for eligible Operations users only via existing service-key-protected endpoint. Public response unchanged; CI/staging pending.
