@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "ecosystem": "Dhole",
   "component": "DholeAuthService",
-  "version": "1.18.0",
-  "ecosystemVersion": "1.135.0",
-  "releaseId": "DH-20261126-PRICING-CATEGORY-REPORT",
-  "releaseStatus": "candidate-ci-staging-pending",
-  "businessReleaseId": "DH-20261126-PRICING-CATEGORY-REPORT"
+  "version": "1.19.0",
+  "ecosystemVersion": "1.138.0",
+  "releaseId": "DH-20261126-OPS-PERMISSION-MATRIX",
+  "releaseStatus": "draft-incomplete-ci-staging-pending",
+  "businessReleaseId": "DH-20261126-OPS-PERMISSION-MATRIX"
 }
