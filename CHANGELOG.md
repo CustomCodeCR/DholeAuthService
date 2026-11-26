@@ -1,3 +1,7 @@
+## [1.18.0] - 2026-11-26
+
+- MINOR: DH-20261126-PRICING-CATEGORY-REPORT. Scope pricing.rate.report.export para el reporte de tarifas por categoría, sin permisos operativos globales. Promoción selectiva desde develop; CI y staging pendientes de verificación.
+
 ## [1.17.1] - 2026-11-20 (DH-20261120-VERSION-NOTICE-500-362 · corrección HTTP 500 preferencias globales y personales)
 
 - PATCH: PostgreSQL NpgsqlRetryingExecutionStrategy requiere que transacción y outbox se ejecuten dentro de Database.CreateExecutionStrategy().ExecuteAsync().

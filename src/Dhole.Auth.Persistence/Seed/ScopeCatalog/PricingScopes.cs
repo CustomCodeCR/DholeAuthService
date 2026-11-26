@@ -83,6 +83,7 @@ internal static class PricingScopes
             ScopeCatalog.Create("pricing.rate.select", "Seleccionar tarifas", "Permite consultar tarifas para listas de selección."),
             ScopeCatalog.Create("pricing.rate.approve-low-margin", "Aprobar margen bajo", "Permite aprobar tarifas con margen menor al mínimo permitido."),
             ScopeCatalog.Create("pricing.rate.approve-freight", "Aprobar flete", "Permite aprobar o modificar manualmente la venta del flete internacional."),
+            ScopeCatalog.Create("pricing.rate.report.export", "Exportar reporte de tarifas por categoría", "Permite descargar el reporte operativo de todas las categorías de tarifas oficiales, sin acceso a importes ni permisos operativos globales."),
             ScopeCatalog.Create("pricing.rate.report.generate", "Generar documento de tarifa", "Permite generar y descargar documentos comerciales de tarifas mediante las plantillas de Reports."),
             ScopeCatalog.Create("pricing.fcl-rate-detail.create", "Agregar detalle FCL", "Permite agregar detalles FCL a una tarifa oficial."),
             ScopeCatalog.Create("pricing.fcl-rate-detail.update", "Actualizar detalle FCL", "Permite modificar detalles FCL de una tarifa oficial."),
