@@ -1,5 +1,7 @@
 using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Domain.Roles.Entities;
+using Dhole.Auth.Domain.Users.Enums;
+using Dhole.Auth.Persistence.Seed;
 using Dhole.Auth.Domain.Scopes.Entities;
 using Dhole.Auth.Domain.Users.Entities;
 using Dhole.Auth.Persistence.DbContexts;
@@ -48,13 +50,23 @@ public sealed class AuthPermissionReadRepository(ServiceDbContext dbContext)
             select scope.Code
         ).ToListAsync(cancellationToken);
 
+        var teamScopes = user.UserType == UserType.Internal && !user.IsDeleted && user.IsActive && !user.IsLocked &&
+            activeRoles.Any(role => OperationsRolePolicy.AssignmentEligible.Contains(role, StringComparer.Ordinal))
+            ? await dbContext.Database.SqlQuery<string>($"SELECT \"ScopeCode\" AS \"Value\" FROM auth.\"OperationsTeamScopeGrants\" WHERE \"UserId\" = {userId}")
+                .ToListAsync(cancellationToken)
+            : new List<string>();
+        if (teamScopes.Count > 0)
+            teamScopes = await dbContext.Scopes.AsNoTracking().Where(s => s.IsActive && teamScopes.Contains(s.Code))
+                .Select(s => s.Code).ToListAsync(cancellationToken);
+
         return new UserPermissionData(
             user.Id,
             user.IsActive,
             user.IsLocked,
             activeRoles.Distinct().OrderBy(x => x).ToList(),
             directScopes.Distinct().OrderBy(x => x).ToList(),
-            roleScopes.Distinct().OrderBy(x => x).ToList()
+            roleScopes.Distinct().OrderBy(x => x).ToList(),
+            teamScopes.Distinct().OrderBy(x => x).ToList()
         );
     }
 
