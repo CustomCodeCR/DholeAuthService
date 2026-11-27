@@ -49,6 +49,24 @@ public sealed class OperationsTeamScopePolicyTests
         CollectionAssert.Contains(after.EffectiveScopes.ToArray(), "operations.document.manage");
     }
 
+    [TestMethod]
+    public void CrossTeamResponsibilitiesAreExplicitAndReadOnly()
+    {
+        var user = Guid.NewGuid();
+        var eligible = new HashSet<Guid> { user };
+        var leader = OperationsTeamScopePolicy.Resolve([new(user, "APERTURAS", true, "OPERATIONS_HEAD")], eligible);
+        Assert.IsTrue(leader.Contains(new(user, "operations.case.read-all")));
+        Assert.IsFalse(leader.Contains(new(user, "operations.case.update")));
+        Assert.IsFalse(leader.Contains(new(user, "operations.team.manage")));
+        var origin = OperationsTeamScopePolicy.Resolve([new(user, "COORDINACION_ORIGEN", true, "ORIGIN_SUPERVISOR")], eligible);
+        Assert.IsTrue(origin.Contains(new(user, "operations.origin.read-all")));
+        Assert.IsFalse(origin.Contains(new(user, "operations.case.read-all")));
+        Assert.IsEmpty(OperationsTeamScopePolicy.Resolve([new(user, "APERTURAS", true, "ORIGIN_SUPERVISOR")], eligible));
+        Assert.IsEmpty(OperationsTeamScopePolicy.Resolve([new(user, "APERTURAS", true, "UNKNOWN")], eligible));
+        Assert.IsFalse(OperationsTeamScopePolicy.Scopes("DOCUMENTACION", false).Contains("operations.case.read-all"));
+        Assert.IsTrue(OperationsTeamScopePolicy.Scopes("TRANSITO", false).Contains("operations.realtime.read"));
+    }
+
     private sealed class FakeRepo(UserPermissionData data) : IAuthPermissionReadRepository
     {
         public Task<UserPermissionData?> GetUserPermissionDataAsync(Guid userId, CancellationToken cancellationToken = default)

@@ -1,3 +1,7 @@
+## [1.21.0] - 2026-11-26
+
+- MINOR candidato: scopes derivados de responsabilidades explícitas de equipos operativos, lectura transversal de jefatura/gerencia y supervisión de origen; conserva permisos directos y roles independientes. CI y staging pendientes.
+
 ## [1.20.0] - 2026-11-26
 
 - MINOR: permisos efectivos derivados de equipos activos de Operations. Proyección separada de roles y scopes directos, reconciliación versionada idempotente y eventos de actualización de permisos. CI y staging pendientes.

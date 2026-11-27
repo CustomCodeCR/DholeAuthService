@@ -1,14 +1,27 @@
 namespace Dhole.Auth.Persistence.Seed;
 
-/// <summary>Only approved operational scopes are derived from active memberships.
-/// A service caller cannot send arbitrary scope names or administrative grants.</summary>
+/// <summary>Allowlisted operational scopes derived from active memberships. Roles
+/// are validated independently of the caller's supplied scope claims.</summary>
 public static class OperationsTeamScopePolicy
 {
     public static bool Supports(string department) =>
-        department is "APERTURAS" or "COORDINACION_ORIGEN";
+        department is "APERTURAS" or "COORDINACION_ORIGEN" or "DOCUMENTACION" or "TRANSITO" or "PANAMA" or "COSTA_RICA";
 
-    public static string[] Scopes(string department, bool supervisor)
+    public static bool SupportsMembership(Membership member) =>
+        Supports(member.DepartmentCode) && (member.RoleCode switch
+        {
+            null or "OPERATOR" or "TEAM_SUPERVISOR" or "LOGISTICS_MANAGER" or "OPERATIONS_HEAD" => true,
+            "ORIGIN_SUPERVISOR" => member.DepartmentCode == "COORDINACION_ORIGEN",
+            _ => false
+        });
+
+    public static string[] Scopes(string department, bool supervisor, string? roleCode = null)
     {
+        if (!SupportsMembership(new(Guid.Empty, department, supervisor, roleCode))) return [];
+        if (roleCode is "LOGISTICS_MANAGER" or "OPERATIONS_HEAD")
+            return ["operations.case.read", "operations.case.read-all", "operations.realtime.read"];
+        if (roleCode == "ORIGIN_SUPERVISOR")
+            return ["operations.case.read", "operations.origin.read", "operations.origin.read-all", "operations.realtime.read"];
         string[] scopes = department switch
         {
             "APERTURAS" => ["operations.case.read", "operations.case.create", "operations.case.update",
@@ -16,16 +29,19 @@ public static class OperationsTeamScopePolicy
             "COORDINACION_ORIGEN" => ["operations.case.read", "operations.origin.read", "operations.origin.update",
                 "operations.origin.departure.confirm", "operations.internal-note.read",
                 "operations.internal-note.create", "operations.document.manage", "operations.realtime.read"],
+            "DOCUMENTACION" => ["operations.case.read", "operations.document.manage", "operations.realtime.read"],
+            "TRANSITO" or "PANAMA" or "COSTA_RICA" => ["operations.case.read", "operations.realtime.read"],
             _ => []
         };
-        return supervisor && Supports(department) ? [.. scopes, "operations.audit.read"] : scopes;
+        return (roleCode == "TEAM_SUPERVISOR" || (roleCode is null && supervisor))
+            ? [.. scopes, "operations.audit.read"] : scopes;
     }
 
-    public sealed record Membership(Guid UserId, string DepartmentCode, bool IsSupervisor);
+    public sealed record Membership(Guid UserId, string DepartmentCode, bool IsSupervisor, string? RoleCode = null);
     public sealed record Grant(Guid UserId, string ScopeCode);
 
     public static HashSet<Grant> Resolve(IEnumerable<Membership> memberships, IReadOnlySet<Guid> eligibleUsers)
-        => memberships.Where(m => eligibleUsers.Contains(m.UserId))
-            .SelectMany(m => Scopes(m.DepartmentCode, m.IsSupervisor).Select(code => new Grant(m.UserId, code)))
+        => memberships.Where(m => eligibleUsers.Contains(m.UserId) && SupportsMembership(m))
+            .SelectMany(m => Scopes(m.DepartmentCode, m.IsSupervisor, m.RoleCode).Select(code => new Grant(m.UserId, code)))
             .ToHashSet();
 }

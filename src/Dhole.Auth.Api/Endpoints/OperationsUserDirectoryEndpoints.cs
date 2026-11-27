@@ -32,7 +32,7 @@ public static class OperationsUserDirectoryEndpoints
             {
                 var q = search.Trim().ToLowerInvariant();
                 query = query.Where(u => u.DisplayName.ToLower().Contains(q) ||
-                    u.UserName.ToLower().Contains(q));
+                    u.UserName.ToLower().Contains(q) || u.Email.ToLower().Contains(q));
             }
             var size = Math.Clamp(pageSize ?? 50, 1, 100);
             var n = Math.Max(page ?? 1, 1);

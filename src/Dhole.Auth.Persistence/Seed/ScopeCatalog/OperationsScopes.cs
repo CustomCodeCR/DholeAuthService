@@ -28,6 +28,7 @@ internal static class OperationsScopes
         ScopeCatalog.Create("operations.origin.update", "Operaciones · Coordinación origen · Actualizar", "Actualiza hitos, planificación y peso real de expedientes asignados."),
         ScopeCatalog.Create("operations.cost.read", "Operaciones · Costos · Consultar", "Consulta costos del expediente autorizado sin autorizar ventas o márgenes."),
         ScopeCatalog.Create("operations.finance.manage", "Operaciones · Finanzas · Consultar información comercial", "Autoriza datos de venta y condiciones comerciales en expedientes autorizados."),
+        ScopeCatalog.Create("operations.origin.read-all", "Operaciones · Coordinación origen · Consultar todos", "Consulta transversal de expedientes en coordinación origen, sujeta a membresía de supervisión activa."),
         ScopeCatalog.Create(OriginRead, "Operaciones · Coordinación origen · Consultar", "Permite consultar el avance de origen de expedientes autorizados."),
         ScopeCatalog.Create(OriginDepartureConfirm, "Operaciones · Coordinación origen · Confirmar salida", "Permite confirmar hitos de salida según las reglas operativas."),
         ScopeCatalog.Create("operations.internal-note.read", "Operaciones · Notas internas · Consultar", "Consulta las notas internas de expedientes autorizados."),
