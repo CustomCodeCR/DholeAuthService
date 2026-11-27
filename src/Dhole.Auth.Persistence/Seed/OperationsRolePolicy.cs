@@ -14,7 +14,7 @@ public static class OperationsRolePolicy
     public const string OperatorLegacyTypo = "Operativo Logisitico";
     public const string OperatorWithoutAccent = "Operativo Logistico";
     public static readonly string[] AssignmentEligible =
-        [Operator, OperatorLegacyTypo, OperatorWithoutAccent, Supervisor];
+        [Operator, OperatorLegacyTypo, OperatorWithoutAccent, Supervisor, "Gerencia Logística", "Jefe de Operaciones", "Supervisor Origen"];
 
     // Only these seven formerly auto-seeded roles may be retired.
     // Keep their scopes and all other manually configured roles unchanged.

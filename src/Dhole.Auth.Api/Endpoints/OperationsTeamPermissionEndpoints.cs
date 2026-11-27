@@ -24,7 +24,7 @@ public static class OperationsTeamPermissionEndpoints
             if (!InternalCrmUserEndpoints.Authorized(request, config)) return Results.Unauthorized();
             if (input.Revision <= 0 || input.Members is null || input.Members.Length > 50000 ||
                 input.Members.Any(m => m is null || m.UserId == Guid.Empty ||
-                    !OperationsTeamScopePolicy.Supports(m.DepartmentCode)))
+                    !OperationsTeamScopePolicy.SupportsMembership(m)))
                 return Results.BadRequest(new { code = "INVALID_OPERATIONS_MEMBERSHIP_SNAPSHOT" });
 
             var strategy = db.Database.CreateExecutionStrategy();
