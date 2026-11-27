@@ -22,7 +22,7 @@ public sealed class OperationsScopeCatalogTests
             Name = (string)x.GetType().GetProperty("Name")!.GetValue(x)!
         }).Where(x => x.Code.StartsWith("operations.", StringComparison.Ordinal)).ToArray();
 
-        Assert.AreEqual(21, scopes.Length, "Every Operations backend scope must appear in Auth.");
+        Assert.AreEqual(22, scopes.Length, "Every Operations backend scope must appear in Auth.");
         Assert.IsTrue(scopes.All(x => x.Name.StartsWith("Operaciones · ", StringComparison.Ordinal)),
             "Operations permissions must have discoverable Spanish labels.");
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.team.manage");
@@ -32,16 +32,17 @@ public sealed class OperationsScopeCatalogTests
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.case.update");
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.aperture.update");
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.origin.update");
+        CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.origin.read-all");
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.cost.read");
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.finance.manage");
         Assert.AreEqual(scopes.Length, scopes.Select(x => x.Code).Distinct(StringComparer.Ordinal).Count());
     }
 
     [TestMethod]
-    public void RolePoolOnlyContainsTheTwoApprovedLogisticsRoles()
+    public void RoleDirectoryOnlyContainsApprovedLogisticsAndLeadershipRoles()
     {
         CollectionAssert.AreEquivalent(
-            new[] { "Operativo Logístico", "Operativo Logisitico", "Operativo Logistico", "Supervisor Operativo" },
+            new[] { "Operativo Logístico", "Operativo Logisitico", "Operativo Logistico", "Supervisor Operativo", "Gerencia Logística", "Jefe de Operaciones", "Supervisor Origen" },
             OperationsRolePolicy.AssignmentEligible);
         Assert.IsFalse(OperationsRolePolicy.AssignmentEligible.Contains("Operador Logístico"));
         Assert.IsFalse(OperationsRolePolicy.AssignmentEligible.Contains("SuperUsuario"));
