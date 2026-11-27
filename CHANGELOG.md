@@ -1,3 +1,7 @@
+## [1.24.0] - 2026-11-27
+
+- MINOR: scopes operativos independientes para consulta/vínculo QUO, selección CRM, contactos logísticos y CABYS. Proyección por membresía de Aperturas y gerencia/jefatura; no otorga scopes comerciales generales. CI y staging pendientes.
+
 ## [1.23.0] - 2026-11-27
 
 - MINOR candidato: permite crear expedientes a gerencia logística y jefatura operativa por membresía activa, conservando los demás límites de acceso. Pruebas añadidas; CI y staging pendientes.

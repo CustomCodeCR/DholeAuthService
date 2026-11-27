@@ -19,13 +19,13 @@ public static class OperationsTeamScopePolicy
     {
         if (!SupportsMembership(new(Guid.Empty, department, supervisor, roleCode))) return [];
         if (roleCode is "LOGISTICS_MANAGER" or "OPERATIONS_HEAD")
-            return ["operations.case.read", "operations.case.read-all", "operations.case.create", "operations.realtime.read"];
+            return ["operations.case.read", "operations.case.read-all", "operations.case.create", "operations.realtime.read", "operations.pricing.quote.read", "operations.pricing.quote.link", "operations.crm.account.select", "operations.crm.contact.read", "operations.catalog.cabys.read"];
         if (roleCode == "ORIGIN_SUPERVISOR")
             return ["operations.case.read", "operations.origin.read", "operations.origin.read-all", "operations.realtime.read"];
         string[] scopes = department switch
         {
             "APERTURAS" => ["operations.case.read", "operations.case.create", "operations.case.update",
-                "operations.aperture.update", "operations.aperture.validation.review", "operations.realtime.read"],
+                "operations.aperture.update", "operations.aperture.validation.review", "operations.realtime.read", "operations.pricing.quote.read", "operations.pricing.quote.link", "operations.crm.account.select", "operations.crm.contact.read", "operations.catalog.cabys.read"],
             "COORDINACION_ORIGEN" => ["operations.case.read", "operations.origin.read", "operations.origin.update",
                 "operations.origin.departure.confirm", "operations.internal-note.read",
                 "operations.internal-note.create", "operations.document.manage", "operations.realtime.read"],
