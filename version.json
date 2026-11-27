@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "ecosystem": "Dhole",
   "component": "DholeAuthService",
-  "version": "1.22.0",
-  "ecosystemVersion": "1.141.0",
-  "releaseId": "DH-20261126-OPS-AUTH-ROLES-SCOPES",
+  "version": "1.23.0",
+  "ecosystemVersion": "1.143.0",
+  "releaseId": "DH-20261127-APERTURAS-UNIFICADAS-PARTIAL",
   "releaseStatus": "candidate-ci-staging-pending",
-  "businessReleaseId": "DH-20261126-OPS-AUTH-ROLES-SCOPES"
+  "businessReleaseId": "DH-20261127-APERTURAS-UNIFICADAS-PARTIAL"
 }
