@@ -85,6 +85,20 @@ public sealed class OperationsTeamScopePolicyTests
         CollectionAssert.DoesNotContain(OperationsTeamScopePolicy.Scopes("APERTURAS", true), "operations.team.member.assign");
     }
 
+    [TestMethod]
+    public void OpeningScopesDoNotGrantCommercialAccess()
+    {
+        var opening = OperationsTeamScopePolicy.Scopes("APERTURAS", false);
+        foreach (var scope in new[] { "operations.pricing.quote.read", "operations.pricing.quote.link", "operations.crm.account.select", "operations.crm.contact.read", "operations.catalog.cabys.read" })
+        {
+            CollectionAssert.Contains(opening, scope);
+            CollectionAssert.Contains(OperationsTeamScopePolicy.Scopes("APERTURAS", true, "OPERATIONS_HEAD"), scope);
+            CollectionAssert.DoesNotContain(OperationsTeamScopePolicy.Scopes("DOCUMENTACION", false), scope);
+        }
+        foreach (var scope in new[] { "pricing.rate.update", "pricing.rate.view", "pricing.workspace.access", "crm.account.read-all", "crm.contact.read" })
+            CollectionAssert.DoesNotContain(opening, scope);
+    }
+
     private sealed class FakeRepo(UserPermissionData data) : IAuthPermissionReadRepository
     {
         public Task<UserPermissionData?> GetUserPermissionDataAsync(Guid userId, CancellationToken cancellationToken = default)

@@ -22,7 +22,7 @@ public sealed class OperationsScopeCatalogTests
             Name = (string)x.GetType().GetProperty("Name")!.GetValue(x)!
         }).Where(x => x.Code.StartsWith("operations.", StringComparison.Ordinal)).ToArray();
 
-        Assert.AreEqual(31, scopes.Length, "Every Operations backend scope must appear in Auth.");
+        Assert.AreEqual(36, scopes.Length, "Every Operations backend scope must appear in Auth.");
         Assert.IsTrue(scopes.All(x => x.Name.StartsWith("Operaciones · ", StringComparison.Ordinal)),
             "Operations permissions must have discoverable Spanish labels.");
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.team.manage");
@@ -35,6 +35,11 @@ public sealed class OperationsScopeCatalogTests
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.origin.read-all");
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.cost.read");
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.finance.manage");
+        CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.pricing.quote.read");
+        CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.pricing.quote.link");
+        CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.crm.account.select");
+        CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.crm.contact.read");
+        CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.catalog.cabys.read");
         Assert.AreEqual(scopes.Length, scopes.Select(x => x.Code).Distinct(StringComparer.Ordinal).Count());
     }
 

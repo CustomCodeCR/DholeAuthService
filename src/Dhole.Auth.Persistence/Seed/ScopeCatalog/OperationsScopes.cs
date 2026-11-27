@@ -45,6 +45,11 @@ internal static class OperationsScopes
         ScopeCatalog.Create("operations.team.read", "Operaciones · Ver Equipos", "Consulta de equipos de la empresa."),
         ScopeCatalog.Create("operations.team.member.assign", "Operaciones · Asignar usuarios a equipos", "Asignación de integrantes elegibles de la empresa."),
         ScopeCatalog.Create("operations.team.member.remove", "Operaciones · Remover usuarios de equipos", "Retiro de integrantes sujeto a auditoría."),
+        ScopeCatalog.Create("operations.pricing.quote.read", "Operaciones · Cotizaciones · Consultar QUO aceptadas", "Consulta datos logísticos de QUO aceptadas para IDTRA; no concede acceso al módulo Pricing ni a importes."),
+        ScopeCatalog.Create("operations.pricing.quote.link", "Operaciones · Cotizaciones · Vincular QUO a IDTRA", "Autoriza registrar el vínculo en expedientes visibles y compatibles; no permite editar tarifas comerciales."),
+        ScopeCatalog.Create("operations.crm.account.select", "Operaciones · Aperturas · Seleccionar cuentas CRM", "Consulta únicamente identidad de cuentas activas y responsable comercial para aperturas."),
+        ScopeCatalog.Create("operations.crm.contact.read", "Operaciones · Aperturas · Consultar contactos logísticos", "Consulta únicamente contactos activos habilitados para operaciones de una cuenta."),
+        ScopeCatalog.Create("operations.catalog.cabys.read", "Operaciones · Aperturas · Consultar CABYS", "Consulta el catálogo CABYS sin acceso al módulo Pricing."),
         ScopeCatalog.Create(RealtimeRead, "Operaciones · Tiempo real · Suscribirse", "Autoriza acceso a notificaciones SignalR de expedientes visibles para el usuario.")
     ];
 }
