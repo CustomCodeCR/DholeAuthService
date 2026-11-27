@@ -1,3 +1,7 @@
+## [1.22.0] - 2026-11-26
+
+- MINOR candidato: cuatro roles de negocio no protegidos, catálogo de scopes operativos y separación de permisos de equipos. Proyección automática por membresía, compatibilidad de roles y scopes anteriores. CI y staging pendientes; borrado de trámites requiere implementación separada.
+
 ## [1.21.0] - 2026-11-26
 
 - MINOR candidato: scopes derivados de responsabilidades explícitas de equipos operativos, lectura transversal de jefatura/gerencia y supervisión de origen; conserva permisos directos y roles independientes. CI y staging pendientes.

@@ -67,6 +67,19 @@ public sealed class OperationsTeamScopePolicyTests
         Assert.IsTrue(OperationsTeamScopePolicy.Scopes("TRANSITO", false).Contains("operations.realtime.read"));
     }
 
+    [TestMethod]
+    public void DepartmentScopesDoNotGrantTeamAdministrationOrDelete()
+    {
+        CollectionAssert.Contains(OperationsTeamScopePolicy.Scopes("TRANSITO", false), "operations.transit.manage");
+        CollectionAssert.Contains(OperationsTeamScopePolicy.Scopes("PANAMA", false), "operations.panama.manage");
+        CollectionAssert.Contains(OperationsTeamScopePolicy.Scopes("COSTA_RICA", false), "operations.costa-rica.manage");
+        CollectionAssert.Contains(OperationsTeamScopePolicy.Scopes("COORDINACION_ORIGEN", false, teamName: "Origen · Centroamérica"), "operations.central-america.manage");
+        CollectionAssert.Contains(OperationsTeamScopePolicy.Scopes("COORDINACION_ORIGEN", false, teamName: "Origen · FTL"), "operations.land.manage");
+        CollectionAssert.DoesNotContain(OperationsTeamScopePolicy.Scopes("COORDINACION_ORIGEN", false), "operations.land.manage");
+        CollectionAssert.DoesNotContain(OperationsTeamScopePolicy.Scopes("APERTURAS", true), "operations.case.delete");
+        CollectionAssert.DoesNotContain(OperationsTeamScopePolicy.Scopes("APERTURAS", true), "operations.team.member.assign");
+    }
+
     private sealed class FakeRepo(UserPermissionData data) : IAuthPermissionReadRepository
     {
         public Task<UserPermissionData?> GetUserPermissionDataAsync(Guid userId, CancellationToken cancellationToken = default)

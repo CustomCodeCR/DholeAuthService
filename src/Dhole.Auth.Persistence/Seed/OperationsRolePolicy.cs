@@ -13,8 +13,9 @@ public static class OperationsRolePolicy
     // no other department, Dynamics, sales or generic admin roles are admitted.
     public const string OperatorLegacyTypo = "Operativo Logisitico";
     public const string OperatorWithoutAccent = "Operativo Logistico";
+    public static readonly string[] BusinessRoles = ["Supervisor Operaciones", "Jefe Operaciones", "Operativo", "Gerente Logistica"];
     public static readonly string[] AssignmentEligible =
-        [Operator, OperatorLegacyTypo, OperatorWithoutAccent, Supervisor, "Gerencia Logística", "Jefe de Operaciones", "Supervisor Origen"];
+        [.. BusinessRoles, Operator, OperatorLegacyTypo, OperatorWithoutAccent, Supervisor, "Gerencia Logística", "Jefe de Operaciones", "Supervisor Origen"];
 
     // Only these seven formerly auto-seeded roles may be retired.
     // Keep their scopes and all other manually configured roles unchanged.
