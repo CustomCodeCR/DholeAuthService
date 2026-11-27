@@ -50,12 +50,17 @@ public sealed class OperationsTeamScopePolicyTests
     }
 
     [TestMethod]
-    public void CrossTeamResponsibilitiesAreExplicitAndReadOnly()
+    public void CrossTeamResponsibilitiesAllowCreationWithoutUnrelatedWrites()
     {
         var user = Guid.NewGuid();
         var eligible = new HashSet<Guid> { user };
         var leader = OperationsTeamScopePolicy.Resolve([new(user, "APERTURAS", true, "OPERATIONS_HEAD")], eligible);
         Assert.IsTrue(leader.Contains(new(user, "operations.case.read-all")));
+        Assert.IsTrue(leader.Contains(new(user, "operations.case.create")));
+        CollectionAssert.Contains(OperationsTeamScopePolicy.Scopes("COORDINACION_ORIGEN", true, "LOGISTICS_MANAGER"), "operations.case.create");
+        CollectionAssert.DoesNotContain(OperationsTeamScopePolicy.Scopes("COORDINACION_ORIGEN", true, "ORIGIN_SUPERVISOR"), "operations.case.create");
+        CollectionAssert.DoesNotContain(OperationsTeamScopePolicy.Scopes("DOCUMENTACION", false), "operations.case.create");
+        CollectionAssert.DoesNotContain(OperationsTeamScopePolicy.Scopes("APERTURAS", false, "LOGISTICS_MANAGER"), "operations.case.delete");
         Assert.IsFalse(leader.Contains(new(user, "operations.case.update")));
         Assert.IsFalse(leader.Contains(new(user, "operations.team.manage")));
         var origin = OperationsTeamScopePolicy.Resolve([new(user, "COORDINACION_ORIGEN", true, "ORIGIN_SUPERVISOR")], eligible);

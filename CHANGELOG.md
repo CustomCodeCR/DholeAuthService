@@ -1,3 +1,7 @@
+## [1.23.0] - 2026-11-27
+
+- MINOR candidato: permite crear expedientes a gerencia logística y jefatura operativa por membresía activa, conservando los demás límites de acceso. Pruebas añadidas; CI y staging pendientes.
+
 ## [1.22.0] - 2026-11-26
 
 - MINOR candidato: cuatro roles de negocio no protegidos, catálogo de scopes operativos y separación de permisos de equipos. Proyección automática por membresía, compatibilidad de roles y scopes anteriores. CI y staging pendientes; borrado de trámites requiere implementación separada.

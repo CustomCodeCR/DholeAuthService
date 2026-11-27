@@ -19,7 +19,7 @@ public static class OperationsTeamScopePolicy
     {
         if (!SupportsMembership(new(Guid.Empty, department, supervisor, roleCode))) return [];
         if (roleCode is "LOGISTICS_MANAGER" or "OPERATIONS_HEAD")
-            return ["operations.case.read", "operations.case.read-all", "operations.realtime.read"];
+            return ["operations.case.read", "operations.case.read-all", "operations.case.create", "operations.realtime.read"];
         if (roleCode == "ORIGIN_SUPERVISOR")
             return ["operations.case.read", "operations.origin.read", "operations.origin.read-all", "operations.realtime.read"];
         string[] scopes = department switch
