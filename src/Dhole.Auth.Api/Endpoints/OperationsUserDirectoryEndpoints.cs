@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Dhole.Auth.Api.Authorization;
 using Dhole.Auth.Application.Abstractions.Permissions;
 using Dhole.Auth.Domain.Users.Enums;
@@ -14,8 +15,9 @@ public static class OperationsUserDirectoryEndpoints
     {
         var api = app.MapGroup("/api/auth/users").RequireAuthorization().WithTags("Operations · Auth users");
         api.MapGet("/operations-directory", async (ServiceDbContext db,
-            int? page, int? pageSize, string? search, CancellationToken ct) =>
+            int? page, int? pageSize, string? search, HttpContext http, IAuthorizationService authorization, CancellationToken ct) =>
         {
+            if (!await CanAccessAsync(http, authorization, "operations.team.read", "operations.team.member.assign")) return Results.Forbid();
             if (search?.Length > 100) return Results.BadRequest(new { code = "SEARCH_TOO_LONG" });
             // Do not expose all internal users: only explicitly assigned logistics
             // operators/supervisors are eligible for operational team membership.
@@ -43,7 +45,7 @@ public static class OperationsUserDirectoryEndpoints
                     .Select(u => new { u.Id, u.DisplayName, u.UserName })
                     .ToListAsync(ct)
             });
-        }).RequireScope("operations.team.manage");
+        });
 
         // Audit activity may be performed by SuperUsuarios who are not eligible
         // as operational team members. Resolve only audited actors' display names
@@ -63,8 +65,11 @@ public static class OperationsUserDirectoryEndpoints
             return Results.Ok(new { items });
         }).RequireScope("operations.audit.read");
 
-        api.MapGet("/{userId:guid}/operations-eligibility", (Guid userId, ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct) => EligibilityAsync(userId, db, permissions, ct))
-            .RequireScope("operations.team.manage");
+        api.MapGet("/{userId:guid}/operations-eligibility", async (Guid userId, ServiceDbContext db, IEffectivePermissionService permissions, HttpContext http, IAuthorizationService authorization, CancellationToken ct) =>
+        {
+            if (!await CanAccessAsync(http, authorization, "operations.team.member.assign")) return Results.Forbid();
+            return await EligibilityAsync(userId, db, permissions, ct);
+        });
         app.MapGet("/api/internal/auth/operations-users/{userId:guid}/eligibility", async (
             Guid userId, HttpRequest request, IConfiguration configuration,
             ServiceDbContext db, IEffectivePermissionService permissions, CancellationToken ct) =>
@@ -74,6 +79,13 @@ public static class OperationsUserDirectoryEndpoints
             return await EligibilityAsync(userId, db, permissions, ct, includeEmail: true);
         }).AllowAnonymous().WithTags("Internal");
         return app;
+    }
+
+    private static async Task<bool> CanAccessAsync(HttpContext http, IAuthorizationService authorization, params string[] scopes)
+    {
+        foreach (var scope in scopes.Append("operations.team.manage"))
+            if ((await authorization.AuthorizeAsync(http.User, null, "Scope:" + scope)).Succeeded) return true;
+        return false;
     }
 
     private static async Task<IResult> EligibilityAsync(Guid userId, ServiceDbContext db,

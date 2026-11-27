@@ -101,6 +101,11 @@ public sealed class DatabaseSeeder(
             await dbContext.Roles.AddAsync(pricing, cancellationToken);
         }
 
+        foreach (var name in OperationsRolePolicy.BusinessRoles)
+        {
+            if (!await dbContext.Roles.IgnoreQueryFilters().AnyAsync(r => r.Name == name, cancellationToken))
+                await dbContext.Roles.AddAsync(Role.Create(name, "Rol de negocio de Operaciones.", isSystemRole: false), cancellationToken);
+        }
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

@@ -22,7 +22,7 @@ public sealed class OperationsScopeCatalogTests
             Name = (string)x.GetType().GetProperty("Name")!.GetValue(x)!
         }).Where(x => x.Code.StartsWith("operations.", StringComparison.Ordinal)).ToArray();
 
-        Assert.AreEqual(22, scopes.Length, "Every Operations backend scope must appear in Auth.");
+        Assert.AreEqual(31, scopes.Length, "Every Operations backend scope must appear in Auth.");
         Assert.IsTrue(scopes.All(x => x.Name.StartsWith("Operaciones · ", StringComparison.Ordinal)),
             "Operations permissions must have discoverable Spanish labels.");
         CollectionAssert.Contains(scopes.Select(x => x.Code).ToArray(), "operations.team.manage");
@@ -42,8 +42,9 @@ public sealed class OperationsScopeCatalogTests
     public void RoleDirectoryOnlyContainsApprovedLogisticsAndLeadershipRoles()
     {
         CollectionAssert.AreEquivalent(
-            new[] { "Operativo Logístico", "Operativo Logisitico", "Operativo Logistico", "Supervisor Operativo", "Gerencia Logística", "Jefe de Operaciones", "Supervisor Origen" },
+            new[] { "Supervisor Operaciones", "Jefe Operaciones", "Operativo", "Gerente Logistica", "Operativo Logístico", "Operativo Logisitico", "Operativo Logistico", "Supervisor Operativo", "Gerencia Logística", "Jefe de Operaciones", "Supervisor Origen" },
             OperationsRolePolicy.AssignmentEligible);
+        CollectionAssert.AreEquivalent(new[] { "Supervisor Operaciones", "Jefe Operaciones", "Operativo", "Gerente Logistica" }, OperationsRolePolicy.BusinessRoles);
         Assert.IsFalse(OperationsRolePolicy.AssignmentEligible.Contains("Operador Logístico"));
         Assert.IsFalse(OperationsRolePolicy.AssignmentEligible.Contains("SuperUsuario"));
     }
